@@ -1,7 +1,32 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/spf13/cobra"
+)
 
 func main() {
-	fmt.Println("Hello, w <3!")
+	root := &cobra.Command{Use: "w"}
+
+	serve := &cobra.Command{
+		Use:   "serve",
+		Short: "Запустить сервер",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println("W запущен на :8090")
+
+			ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+			defer cancel()
+
+			<-ctx.Done()
+			return nil
+		},
+	}
+
+	root.AddCommand(serve)
+	root.Execute()
 }
