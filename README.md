@@ -26,12 +26,23 @@ _Inspired by [PocketBase](https://pocketbase.io) — the idea that powerful soft
 
 ## What is W?
 
-**W** is an open-source, self-hosted alternative to Discord — packaged as a **single executable binary** written in Go.
+**W** is an open-source, self-hosted real-time communication platform — packaged as a **single executable binary** written in Go.
 
 No Docker. No Kubernetes. No ops team. No cloud vendor lock-in.  
 Download → run → done. Your data stays yours.
 
-W brings everything you love about Discord-style communication — servers, channels, roles, voice, threads — and packages it into one portable file you can run on a $5 VPS, a Raspberry Pi, or your laptop.
+W brings servers, channels, roles, voice, and threads — and packages it all into one portable file you can run on a $5 VPS, a Raspberry Pi, or your laptop.
+
+---
+
+## Что такое W?
+
+**W** — это open-source платформа для общения в реальном времени с возможностью самостоятельного хостинга, упакованная в **один исполняемый файл** на Go.
+
+Никакого Docker. Никакого Kubernetes. Никакой облачной зависимости.  
+Скачай → запусти → готово. Твои данные остаются у тебя.
+
+W предоставляет серверы, каналы, роли, голосовые комнаты и треды — и всё это в одном портативном файле, который можно запустить на VPS за $5, Raspberry Pi или ноутбуке.
 
 ```bash
 # That's it. Seriously.

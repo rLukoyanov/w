@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/rLukoyanov/w/core"
 	"github.com/spf13/cobra"
 )
 
@@ -21,6 +22,12 @@ func main() {
 
 			ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 			defer cancel()
+
+			app := core.New(nil)
+			err := app.Run()
+			if err != nil {
+				return err
+			}
 
 			<-ctx.Done()
 			return nil
