@@ -201,7 +201,7 @@ func main() {
 ### Phase 1 — Foundation `v0.1` _(current focus)_
 
 - [ ] Project scaffolding, CI/CD, release pipeline
-- [ ] Core data models: users, servers, channels, messages
+- [x] Core data models: users, servers, channels, messages
 - [ ] HTTP API (REST) with OpenAPI spec
 - [ ] WebSocket hub + event system
 - [ ] Basic web client (read/send messages)

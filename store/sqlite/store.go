@@ -4,11 +4,16 @@ import (
 	"database/sql"
 
 	"github.com/pressly/goose/v3"
+	"github.com/rLukoyanov/w/repository"
 	_ "modernc.org/sqlite"
 )
 
 type Store struct {
-	db *sql.DB
+	db       *sql.DB
+	users    repository.UsersRepository
+	servers  repository.ServersRepository
+	channels repository.ChannelsRepository
+	messages repository.MessagesRepository
 }
 
 func New(dsn string) (*Store, error) {
@@ -18,7 +23,29 @@ func New(dsn string) (*Store, error) {
 		return nil, err
 	}
 
-	return &Store{db: db}, nil
+	return &Store{
+		db:       db,
+		users:    &UsersRepository{db: db},
+		servers:  &ServersRepository{db: db},
+		channels: &ChannelsRepository{db: db},
+		messages: &MessagesRepository{db: db},
+	}, nil
+}
+
+func (s *Store) Users() repository.UsersRepository {
+	return s.users
+}
+
+func (s *Store) Servers() repository.ServersRepository {
+	return s.servers
+}
+
+func (s *Store) Channels() repository.ChannelsRepository {
+	return s.channels
+}
+
+func (s *Store) Messages() repository.MessagesRepository {
+	return s.messages
 }
 
 func (s *Store) Migrate(migrationsDir string) error {
