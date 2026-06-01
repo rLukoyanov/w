@@ -9,7 +9,7 @@ import (
 func New(driver, dsn string) (Store, error) {
 	switch driver {
 	case "sqlite":
-		return sqlite.New()
+		return sqlite.New(dsn)
 	default:
 		return nil, fmt.Errorf("unsupported driver: %s", driver)
 	}

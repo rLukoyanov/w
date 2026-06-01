@@ -12,3 +12,8 @@ coverage.out
 docs
 
 /bin
+
+# database files
+*.db
+*.sqlite
+*.sqlite3

@@ -4,6 +4,7 @@ go 1.25.8
 
 require (
 	github.com/pressly/goose/v3 v3.27.1
+	github.com/rs/zerolog v1.35.1
 	github.com/spf13/cobra v1.10.2
 	modernc.org/sqlite v1.51.0
 )
@@ -12,6 +13,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.21 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect

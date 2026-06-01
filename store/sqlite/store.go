@@ -11,9 +11,9 @@ type Store struct {
 	db *sql.DB
 }
 
-func New() (*Store, error) {
+func New(dsn string) (*Store, error) {
 	goose.SetDialect("sqlite")
-	db, err := sql.Open("sqlite", "data.db")
+	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,7 @@
 APP_NAME=w
 BIN_DIR=bin
 BIN_PATH=$(BIN_DIR)/$(APP_NAME)
-DB_PATH=./mydb.sqlite
+DB_PATH=./data.db
 MIGRATIONS_DIR=./store/sqlite/migrations
 
 .PHONY: build run migrate migrate-down clean
