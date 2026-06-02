@@ -48,21 +48,29 @@
 	}
 </script>
 
-<main>
+<main class="min-h-screen flex items-center justify-center bg-base p-5">
 	{#if $auth.user}
-		<div class="welcome">
-			<h1>Welcome, {$auth.user.username}!</h1>
-			<p>Email: {$auth.user.email}</p>
-			<p>ID: {$auth.user.id}</p>
-			<button on:click={handleLogout}>Logout</button>
+		<div class="bg-surface rounded-xl p-10 text-center shadow-2xl">
+			<h1 class="text-4xl font-bold text-blue mb-8">Welcome, {$auth.user.username}!</h1>
+			<p class="text-subtext mb-2">Email: {$auth.user.email}</p>
+			<p class="text-subtext mb-6">ID: {$auth.user.id}</p>
+			<button
+				onclick={handleLogout}
+				class="px-6 py-3 bg-red text-base font-semibold rounded-lg hover:bg-pink transition-colors"
+			>
+				Logout
+			</button>
 		</div>
 	{:else}
-		<div class="auth-container">
-			<h1>W</h1>
-			<div class="tabs">
+		<div class="bg-surface rounded-xl p-10 w-full max-w-md shadow-2xl">
+			<h1 class="text-4xl font-bold text-blue text-center mb-8">W</h1>
+
+			<div class="flex gap-2 mb-8">
 				<button
-					class:active={mode === 'login'}
-					on:click={() => {
+					class="flex-1 py-3 px-4 rounded-lg font-medium transition-all {mode === 'login'
+						? 'bg-blue text-base'
+						: 'bg-overlay text-text hover:bg-overlay/80'}"
+					onclick={() => {
 						mode = 'login';
 						error = '';
 					}}
@@ -70,8 +78,10 @@
 					Login
 				</button>
 				<button
-					class:active={mode === 'register'}
-					on:click={() => {
+					class="flex-1 py-3 px-4 rounded-lg font-medium transition-all {mode === 'register'
+						? 'bg-blue text-base'
+						: 'bg-overlay text-text hover:bg-overlay/80'}"
+					onclick={() => {
 						mode = 'register';
 						error = '';
 					}}
@@ -80,41 +90,60 @@
 				</button>
 			</div>
 
-			<form on:submit|preventDefault={handleSubmit}>
+			<form on:submit|preventDefault={handleSubmit} class="space-y-5">
 				{#if mode === 'register'}
-					<div class="form-group">
-						<label for="username">Username</label>
+					<div>
+						<label for="username" class="block text-sm font-medium text-subtext mb-2">
+							Username
+						</label>
 						<input
 							id="username"
 							type="text"
 							bind:value={username}
 							required
 							placeholder="Enter username"
+							class="w-full px-4 py-3 bg-overlay border-2 border-overlay rounded-lg text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
 						/>
 					</div>
 				{/if}
 
-				<div class="form-group">
-					<label for="email">Email</label>
-					<input id="email" type="email" bind:value={email} required placeholder="Enter email" />
+				<div>
+					<label for="email" class="block text-sm font-medium text-subtext mb-2">Email</label>
+					<input
+						id="email"
+						type="email"
+						bind:value={email}
+						required
+						placeholder="Enter email"
+						class="w-full px-4 py-3 bg-overlay border-2 border-overlay rounded-lg text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
+					/>
 				</div>
 
-				<div class="form-group">
-					<label for="password">Password</label>
+				<div>
+					<label for="password" class="block text-sm font-medium text-subtext mb-2">
+						Password
+					</label>
 					<input
 						id="password"
 						type="password"
 						bind:value={password}
 						required
 						placeholder="Enter password"
+						class="w-full px-4 py-3 bg-overlay border-2 border-overlay rounded-lg text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
 					/>
 				</div>
 
 				{#if error}
-					<div class="error">{error}</div>
+					<div class="px-4 py-3 bg-red text-base rounded-lg font-medium">
+						{error}
+					</div>
 				{/if}
 
-				<button type="submit" disabled={loading}>
+				<button
+					type="submit"
+					disabled={loading}
+					class="w-full py-3 bg-blue text-base font-semibold rounded-lg hover:bg-sky transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+				>
 					{loading ? 'Loading...' : mode === 'login' ? 'Login' : 'Register'}
 				</button>
 			</form>
@@ -122,160 +151,3 @@
 	{/if}
 </main>
 
-<style>
-	:global(body) {
-		margin: 0;
-		padding: 0;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-			sans-serif;
-		background: #1e1e2e;
-		color: #cdd6f4;
-	}
-
-	main {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		min-height: 100vh;
-		padding: 20px;
-	}
-
-	.auth-container {
-		background: #181825;
-		border-radius: 12px;
-		padding: 40px;
-		width: 100%;
-		max-width: 400px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-	}
-
-	.welcome {
-		background: #181825;
-		border-radius: 12px;
-		padding: 40px;
-		text-align: center;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-	}
-
-	h1 {
-		margin: 0 0 30px;
-		text-align: center;
-		font-size: 32px;
-		color: #89b4fa;
-	}
-
-	.tabs {
-		display: flex;
-		gap: 10px;
-		margin-bottom: 30px;
-	}
-
-	.tabs button {
-		flex: 1;
-		padding: 12px;
-		background: #313244;
-		border: none;
-		border-radius: 8px;
-		color: #cdd6f4;
-		cursor: pointer;
-		font-size: 14px;
-		font-weight: 500;
-		transition: all 0.2s;
-	}
-
-	.tabs button:hover {
-		background: #45475a;
-	}
-
-	.tabs button.active {
-		background: #89b4fa;
-		color: #1e1e2e;
-	}
-
-	.form-group {
-		margin-bottom: 20px;
-	}
-
-	label {
-		display: block;
-		margin-bottom: 8px;
-		font-size: 14px;
-		font-weight: 500;
-		color: #a6adc8;
-	}
-
-	input {
-		width: 100%;
-		padding: 12px;
-		background: #313244;
-		border: 2px solid #45475a;
-		border-radius: 8px;
-		color: #cdd6f4;
-		font-size: 14px;
-		box-sizing: border-box;
-		transition: border-color 0.2s;
-	}
-
-	input:focus {
-		outline: none;
-		border-color: #89b4fa;
-	}
-
-	input::placeholder {
-		color: #6c7086;
-	}
-
-	button[type='submit'] {
-		width: 100%;
-		padding: 14px;
-		background: #89b4fa;
-		border: none;
-		border-radius: 8px;
-		color: #1e1e2e;
-		font-size: 16px;
-		font-weight: 600;
-		cursor: pointer;
-		transition: all 0.2s;
-	}
-
-	button[type='submit']:hover:not(:disabled) {
-		background: #74c7ec;
-	}
-
-	button[type='submit']:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-
-	.error {
-		padding: 12px;
-		background: #f38ba8;
-		color: #1e1e2e;
-		border-radius: 8px;
-		margin-bottom: 20px;
-		font-size: 14px;
-		font-weight: 500;
-	}
-
-	.welcome button {
-		margin-top: 20px;
-		padding: 12px 24px;
-		background: #f38ba8;
-		border: none;
-		border-radius: 8px;
-		color: #1e1e2e;
-		font-size: 14px;
-		font-weight: 600;
-		cursor: pointer;
-		transition: all 0.2s;
-	}
-
-	.welcome button:hover {
-		background: #eba0ac;
-	}
-
-	.welcome p {
-		margin: 10px 0;
-		color: #a6adc8;
-	}
-</style>
