@@ -62,7 +62,7 @@
 						bind:value={username}
 						required
 						placeholder="username"
-						class="w-full px-4 py-3 bg-base border border-border rounded text-sm text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
+						class="w-full px-4 py-3 bg-base border border-border rounded text-sm text-text placeholder-subtext/50 focus:outline-none focus:border-text/30 transition-colors"
 					/>
 				</div>
 
@@ -74,7 +74,7 @@
 						bind:value={email}
 						required
 						placeholder="your@email.com"
-						class="w-full px-4 py-3 bg-base border border-border rounded text-sm text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
+						class="w-full px-4 py-3 bg-base border border-border rounded text-sm text-text placeholder-subtext/50 focus:outline-none focus:border-text/30 transition-colors"
 					/>
 				</div>
 
@@ -88,7 +88,7 @@
 						bind:value={password}
 						required
 						placeholder="••••••••"
-						class="w-full px-4 py-3 bg-base border border-border rounded text-sm text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
+						class="w-full px-4 py-3 bg-base border border-border rounded text-sm text-text placeholder-subtext/50 focus:outline-none focus:border-text/30 transition-colors"
 					/>
 				</div>
 			</div>
@@ -102,14 +102,14 @@
 			<button
 				type="submit"
 				disabled={loading}
-				class="w-full px-4 py-3 bg-blue text-white text-sm font-medium rounded hover:bg-blue/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+				class="w-full px-4 py-3 bg-text text-base text-sm font-medium rounded hover:bg-text/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 			>
 				{loading ? 'Creating account...' : 'Create account'}
 			</button>
 
 			<p class="text-center text-sm text-subtext">
 				Already have an account?
-				<a href="/login" class="text-blue hover:underline">Sign in</a>
+				<a href="/login" class="text-text hover:underline">Sign in</a>
 			</p>
 		</form>
 	</div>

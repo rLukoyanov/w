@@ -42,7 +42,7 @@
 			</div>
 			<button
 				onclick={handleLogout}
-				class="w-full px-4 py-2 bg-overlay border border-border text-text text-sm font-medium rounded hover:bg-base transition-colors"
+				class="w-full px-4 py-2 bg-overlay border border-border text-text text-sm font-medium rounded hover:bg-border/50 transition-colors"
 			>
 				Sign out
 			</button>
