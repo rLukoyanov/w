@@ -90,7 +90,13 @@
 				</button>
 			</div>
 
-			<form on:submit|preventDefault={handleSubmit} class="space-y-5">
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleSubmit();
+				}}
+				class="space-y-5"
+			>
 				{#if mode === 'register'}
 					<div>
 						<label for="username" class="block text-sm font-medium text-subtext mb-2">
