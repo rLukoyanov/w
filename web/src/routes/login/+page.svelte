@@ -40,7 +40,9 @@
   class="min-h-screen flex items-center justify-center bg-base p-5 flex-col"
 >
   <div class="text-center mb-8">
-    <h1 class="text-2xl font-semibold text-text mb-2">Login</h1>  </div>
+    <h1 class="text-2xl font-semibold text-text mb-2">Sign in</h1>
+    <p class="text-sm text-subtext">Enter your credentials to continue</p>
+  </div>
 
   <form
     onsubmit={(e) => {

@@ -37,22 +37,20 @@
 	}
 </script>
 
-<main class="min-h-screen flex items-center justify-center bg-base p-5">
-	<div class="bg-surface border border-border rounded-lg p-8 w-full max-w-sm">
-		<div class="text-center mb-8">
-			<h1 class="text-2xl font-semibold text-text mb-2">Create account</h1>
-			<p class="text-sm text-subtext">Sign up to get started</p>
-		</div>
+<main class="min-h-screen flex items-center justify-center bg-base p-5 flex-col">
+	<div class="text-center mb-8">
+		<h1 class="text-2xl font-semibold text-text mb-2">Sign up</h1>
+		<p class="text-sm text-subtext">Create your account to get started</p>
+	</div>
 
-		<form
-			onsubmit={(e) => {
-				e.preventDefault();
-				handleSubmit();
-			}}
-			class="space-y-4"
-		>
-			<div class="bg-overlay border border-border rounded-lg p-5 space-y-4">
-				<div>
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			handleSubmit();
+		}}
+		class="space-y-4 w-100"
+	>
+		<div class="space-y-4">
 					<label for="username" class="block text-sm font-medium text-text mb-2">
 						Username
 					</label>
@@ -112,5 +110,4 @@
 				<a href="/login" class="text-text hover:underline">Sign in</a>
 			</p>
 		</form>
-	</div>
-</main>
+
