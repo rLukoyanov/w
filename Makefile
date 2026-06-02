@@ -12,7 +12,11 @@ build:
 	go build -o $(BIN_PATH) ./cmd/w
 
 run: build
-	$(BIN_PATH) serve
+	@echo "🚀 Starting backend and frontend..."
+	@trap 'kill 0' EXIT; \
+	$(BIN_PATH) serve & \
+	sleep 2 && \
+	cd web && npm run dev
 migrate:
 	goose -dir $(MIGRATIONS_DIR) sqlite3 $(DB_PATH) up
 
