@@ -1,0 +1,45 @@
+export interface User {
+	id: string;
+	username: string;
+	email: string;
+	created_at: string;
+}
+
+export interface AuthResponse {
+	token: string;
+	user: User;
+}
+
+export interface LoginRequest {
+	email: string;
+	password: string;
+}
+
+export interface RegisterRequest {
+	username: string;
+	email: string;
+	password: string;
+}
+
+export interface Server {
+	id: string;
+	name: string;
+	owner_id: string;
+	created_at: string;
+}
+
+export interface Channel {
+	id: string;
+	server_id: string;
+	name: string;
+	type: string;
+	created_at: string;
+}
+
+export interface Message {
+	id: string;
+	channel_id: string;
+	author_id: string;
+	content: string;
+	created_at: string;
+}

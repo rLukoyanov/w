@@ -1,5 +1,5 @@
 import { writable, type Writable } from 'svelte/store';
-import { api } from './api';
+import { userClient } from './api/user';
 
 export type EventType = 
   | 'MESSAGE_CREATE' 

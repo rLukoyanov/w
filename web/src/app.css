@@ -1,16 +1,4 @@
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/preflight" layer(base);
 @import "tailwindcss/utilities" layer(utilities);
-
-@theme {
-	--color-base: #111111;
-	--color-surface: #1c1c1c;
-	--color-overlay: #282828;
-	--color-text: #d4d4d4;
-	--color-subtext: #9ca3af;
-	--color-blue: #71717a;
-	--color-sky: #6b7280;
-	--color-red: #dc2626;
-	--color-pink: #e11d48;
-	--color-border: #333333;
-}
+@plugin "daisyui";
