@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/rLukoyanov/w/apis"
+	"github.com/rLukoyanov/w/apis/ws"
 	"github.com/rLukoyanov/w/config"
 	"github.com/rLukoyanov/w/store"
 	"github.com/rs/zerolog/log"
@@ -58,8 +59,12 @@ func (a *App) Run() error {
 	}
 	log.Info().Msg("migrations applied")
 
+	// Initialize WebSocket hub
+	hub := ws.NewHub(a.store, log.Logger)
+	go hub.Run()
+
 	// Initialize HTTP server
-	a.server = apis.NewServer(a.store, a.Config.Port, a.Config.JWTSecret)
+	a.server = apis.NewServer(a.store, hub, a.Config.Port, a.Config.JWTSecret)
 
 	// Start server in goroutine
 	errChan := make(chan error, 1)
