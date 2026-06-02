@@ -6,7 +6,6 @@
 
 	let email = '';
 	let password = '';
-	let username = '';
 	let error = '';
 	let loading = false;
 
@@ -26,7 +25,7 @@
 		loading = true;
 
 		try {
-			const response = await api.register({ username, email, password });
+			const response = await api.login({ email, password });
 			auth.setUser(response.user);
 			goto('/');
 		} catch (e) {
@@ -40,7 +39,7 @@
 <main class="min-h-screen flex items-center justify-center bg-base p-5">
 	<div class="bg-surface rounded-xl p-10 w-full max-w-md shadow-2xl">
 		<h1 class="text-4xl font-bold text-blue text-center mb-8">W</h1>
-		<h2 class="text-2xl font-semibold text-text text-center mb-8">Register</h2>
+		<h2 class="text-2xl font-semibold text-text text-center mb-8">Login</h2>
 
 		<form
 			onsubmit={(e) => {
@@ -49,20 +48,6 @@
 			}}
 			class="space-y-5"
 		>
-			<div>
-				<label for="username" class="block text-sm font-medium text-subtext mb-2">
-					Username
-				</label>
-				<input
-					id="username"
-					type="text"
-					bind:value={username}
-					required
-					placeholder="Enter username"
-					class="w-full px-4 py-3 bg-overlay border-2 border-overlay rounded-lg text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
-				/>
-			</div>
-
 			<div>
 				<label for="email" class="block text-sm font-medium text-subtext mb-2">Email</label>
 				<input
@@ -100,12 +85,14 @@
 				disabled={loading}
 				class="w-full py-3 bg-blue text-base font-semibold rounded-lg hover:bg-sky transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
 			>
-				{loading ? 'Loading...' : 'Register'}
+				{loading ? 'Loading...' : 'Login'}
 			</button>
 
 			<p class="text-center text-subtext">
-				Already have an account?
-				<a href="/login" class="text-blue hover:text-sky font-medium transition-colors">Login</a>
+				Don't have an account?
+				<a href="/register" class="text-blue hover:text-sky font-medium transition-colors">
+					Register
+				</a>
 			</p>
 		</form>
 	</div>
