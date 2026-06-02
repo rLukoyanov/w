@@ -1,11 +1,6 @@
 package main
 
 import (
-	"context"
-	"os"
-	"os/signal"
-	"syscall"
-
 	"github.com/rLukoyanov/w/config"
 	"github.com/rLukoyanov/w/core"
 	"github.com/rLukoyanov/w/logger"
@@ -28,19 +23,10 @@ func main() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.Info().Msg("starting application")
 
-			ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-			defer cancel()
-
 			cfg := &config.Config{DBPath: dbPath}
-
 			app := core.New(cfg)
-			err := app.Run()
-			if err != nil {
-				return err
-			}
 
-			<-ctx.Done()
-			return nil
+			return app.Run()
 		},
 	}
 
