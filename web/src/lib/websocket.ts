@@ -154,3 +154,7 @@ class WebSocketClient {
 }
 
 export const wsClient = new WebSocketClient();
+
+// Export stores for reactive subscriptions in components
+export const wsConnected = wsClient.connected;
+export const wsMessages = wsClient.messages;

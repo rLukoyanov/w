@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { api, type Channel, type Message } from '$lib/api';
-	import { wsClient } from '$lib/websocket';
+	import { wsClient, wsConnected } from '$lib/websocket';
 	import { auth } from '$lib/stores/auth';
 	import { onMount, onDestroy } from 'svelte';
 
@@ -61,7 +61,7 @@
 		messageInput = '';
 
 		// Send via WebSocket
-		if ($wsClient.connected) {
+		if ($wsConnected) {
 			wsClient.sendMessage(params.channelId, content);
 		} else {
 			// Fallback to HTTP
@@ -103,8 +103,8 @@
 				<h1 class="text-xl font-semibold"># {channel.name}</h1>
 			{/if}
 			<div class="ml-auto flex items-center gap-2">
-				<div class="w-2 h-2 rounded-full" class:bg-green-500={$wsClient.connected} class:bg-red-500={!$wsClient.connected}></div>
-				<span class="text-xs text-subtext">{$wsClient.connected ? 'Live' : 'Offline'}</span>
+				<div class="w-2 h-2 rounded-full" class:bg-green-500={$wsConnected} class:bg-red-500={!$wsConnected}></div>
+				<span class="text-xs text-subtext">{$wsConnected ? 'Live' : 'Offline'}</span>
 			</div>
 		</div>
 	</div>
@@ -155,17 +155,17 @@
 					bind:value={messageInput}
 					placeholder="Type a message..."
 					class="flex-1 px-4 py-2 bg-overlay border border-border rounded text-text placeholder:text-subtext focus:outline-none focus:ring-2 focus:ring-blue"
-					disabled={!$wsClient.connected && loading}
+					disabled={!$wsConnected && loading}
 				/>
 				<button
 					type="submit"
-					disabled={!messageInput.trim() || (!$wsClient.connected && loading)}
+					disabled={!messageInput.trim() || (!$wsConnected && loading)}
 					class="px-6 py-2 bg-blue text-text text-sm font-medium rounded hover:bg-blue/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					Send
 				</button>
 			</form>
-			{#if !$wsClient.connected}
+			{#if !$wsConnected}
 				<p class="text-xs text-red mt-2">⚠️ Disconnected - messages will use HTTP fallback</p>
 			{/if}
 		</div>

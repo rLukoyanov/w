@@ -3,7 +3,7 @@
 	import { auth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { wsClient } from '$lib/websocket';
+	import { wsClient, wsConnected } from '$lib/websocket';
 
 	let servers = $state<Server[]>([]);
 	let loading = $state(true);
@@ -68,8 +68,8 @@
 				<div class="flex items-center gap-3">
 					<h1 class="text-xl font-semibold">W</h1>
 					<div class="flex items-center gap-2">
-						<div class="w-2 h-2 rounded-full" class:bg-green-500={$wsClient.connected} class:bg-red-500={!$wsClient.connected}></div>
-						<span class="text-xs text-subtext">{$wsClient.connected ? 'Connected' : 'Disconnected'}</span>
+						<div class="w-2 h-2 rounded-full" class:bg-green-500={$wsConnected} class:bg-red-500={!$wsConnected}></div>
+						<span class="text-xs text-subtext">{$wsConnected ? 'Connected' : 'Disconnected'}</span>
 					</div>
 				</div>
 				<div class="flex items-center gap-3">
