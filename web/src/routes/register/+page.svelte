@@ -37,10 +37,14 @@
 	}
 </script>
 
-<main class="min-h-screen flex items-center justify-center bg-base p-5">
-	<div class="bg-surface rounded-xl p-10 w-full max-w-md shadow-2xl">
-		<h1 class="text-4xl font-bold text-blue text-center mb-8">W</h1>
-		<h2 class="text-2xl font-semibold text-text text-center mb-8">Register</h2>
+<main class="min-h-screen flex items-center justify-center bg-gradient-to-br from-base via-surface to-overlay p-5 relative overflow-hidden">
+	<!-- Animated background elements -->
+	<div class="absolute top-0 left-0 w-96 h-96 bg-pink/20 rounded-full blur-3xl animate-pulse"></div>
+	<div class="absolute bottom-0 right-0 w-96 h-96 bg-blue/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+	
+	<div class="glass rounded-2xl p-10 w-full max-w-md relative z-10 backdrop-blur-xl">
+		<h1 class="text-5xl font-bold bg-gradient-to-r from-pink to-blue bg-clip-text text-transparent text-center mb-4">W</h1>
+		<h2 class="text-xl font-medium text-subtext text-center mb-8">Create your account</h2>
 
 		<form
 			onsubmit={(e) => {
@@ -59,7 +63,7 @@
 					bind:value={username}
 					required
 					placeholder="Enter username"
-					class="w-full px-4 py-3 bg-overlay border-2 border-overlay rounded-lg text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
+					class="glass-input w-full px-4 py-3 rounded-xl text-text placeholder-subtext/50 focus:outline-none transition-all duration-300"
 				/>
 			</div>
 
@@ -71,7 +75,7 @@
 					bind:value={email}
 					required
 					placeholder="Enter email"
-					class="w-full px-4 py-3 bg-overlay border-2 border-overlay rounded-lg text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
+					class="glass-input w-full px-4 py-3 rounded-xl text-text placeholder-subtext/50 focus:outline-none transition-all duration-300"
 				/>
 			</div>
 
@@ -85,12 +89,12 @@
 					bind:value={password}
 					required
 					placeholder="Enter password"
-					class="w-full px-4 py-3 bg-overlay border-2 border-overlay rounded-lg text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
+					class="glass-input w-full px-4 py-3 rounded-xl text-text placeholder-subtext/50 focus:outline-none transition-all duration-300"
 				/>
 			</div>
 
 			{#if error}
-				<div class="px-4 py-3 bg-red text-base rounded-lg font-medium">
+				<div class="px-4 py-3 bg-gradient-to-r from-red to-pink text-white rounded-xl font-medium shadow-lg">
 					{error}
 				</div>
 			{/if}
@@ -98,14 +102,14 @@
 			<button
 				type="submit"
 				disabled={loading}
-				class="w-full py-3 bg-blue text-base font-semibold rounded-lg hover:bg-sky transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+				class="w-full py-3 bg-gradient-to-r from-pink to-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-pink/50 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:scale-105"
 			>
-				{loading ? 'Loading...' : 'Register'}
+				{loading ? '⏳ Creating account...' : '✨ Register'}
 			</button>
 
 			<p class="text-center text-subtext">
 				Already have an account?
-				<a href="/login" class="text-blue hover:text-sky font-medium transition-colors">Login</a>
+				<a href="/login" class="text-blue hover:text-sky font-semibold transition-all duration-300 hover:underline">Login →</a>
 			</p>
 		</form>
 	</div>

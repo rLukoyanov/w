@@ -22,15 +22,21 @@
 	}
 </script>
 
-<main class="min-h-screen flex items-center justify-center bg-base p-5">
+<main class="min-h-screen flex items-center justify-center bg-gradient-to-br from-base via-surface to-overlay p-5 relative overflow-hidden">
+	<!-- Animated background elements -->
+	<div class="absolute top-0 left-0 w-96 h-96 bg-blue/20 rounded-full blur-3xl animate-pulse"></div>
+	<div class="absolute bottom-0 right-0 w-96 h-96 bg-pink/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+	
 	{#if $auth.user}
-		<div class="bg-surface rounded-xl p-10 text-center shadow-2xl">
-			<h1 class="text-4xl font-bold text-blue mb-8">Welcome, {$auth.user.username}!</h1>
-			<p class="text-subtext mb-2">Email: {$auth.user.email}</p>
-			<p class="text-subtext mb-6">ID: {$auth.user.id}</p>
+		<div class="glass rounded-2xl p-10 text-center relative z-10 backdrop-blur-xl">
+			<h1 class="text-5xl font-bold bg-gradient-to-r from-blue to-sky bg-clip-text text-transparent mb-8">Welcome, {$auth.user.username}!</h1>
+			<div class="glass rounded-xl p-6 mb-6 border border-blue/20">
+				<p class="text-subtext mb-2 text-lg">✉️ {$auth.user.email}</p>
+				<p class="text-subtext/60 text-sm font-mono">ID: {$auth.user.id}</p>
+			</div>
 			<button
 				onclick={handleLogout}
-				class="px-6 py-3 bg-red text-base font-semibold rounded-lg hover:bg-pink transition-colors"
+				class="px-8 py-3 bg-gradient-to-r from-red to-pink text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-red/50 transition-all duration-300 hover:scale-105"
 			>
 				Logout
 			</button>
