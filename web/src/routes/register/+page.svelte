@@ -1,0 +1,112 @@
+<script lang="ts">
+	import { api } from '$lib/api';
+	import { auth } from '$lib/stores/auth';
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+
+	let email = '';
+	let password = '';
+	let username = '';
+	let error = '';
+	let loading = false;
+
+	onMount(async () => {
+		// Check if user is already logged in
+		try {
+			const user = await api.getMe();
+			auth.setUser(user);
+			goto('/');
+		} catch (e) {
+			// Not logged in, that's fine
+		}
+	});
+
+	async function handleSubmit() {
+		error = '';
+		loading = true;
+
+		try {
+			const response = await api.register({ username, email, password });
+			auth.setUser(response.user);
+			goto('/');
+		} catch (e) {
+			error = e instanceof Error ? e.message : 'An error occurred';
+		} finally {
+			loading = false;
+		}
+	}
+</script>
+
+<main class="min-h-screen flex items-center justify-center bg-base p-5">
+	<div class="bg-surface rounded-xl p-10 w-full max-w-md shadow-2xl">
+		<h1 class="text-4xl font-bold text-blue text-center mb-8">W</h1>
+		<h2 class="text-2xl font-semibold text-text text-center mb-8">Register</h2>
+
+		<form
+			onsubmit={(e) => {
+				e.preventDefault();
+				handleSubmit();
+			}}
+			class="space-y-5"
+		>
+			<div>
+				<label for="username" class="block text-sm font-medium text-subtext mb-2">
+					Username
+				</label>
+				<input
+					id="username"
+					type="text"
+					bind:value={username}
+					required
+					placeholder="Enter username"
+					class="w-full px-4 py-3 bg-overlay border-2 border-overlay rounded-lg text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
+				/>
+			</div>
+
+			<div>
+				<label for="email" class="block text-sm font-medium text-subtext mb-2">Email</label>
+				<input
+					id="email"
+					type="email"
+					bind:value={email}
+					required
+					placeholder="Enter email"
+					class="w-full px-4 py-3 bg-overlay border-2 border-overlay rounded-lg text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
+				/>
+			</div>
+
+			<div>
+				<label for="password" class="block text-sm font-medium text-subtext mb-2">
+					Password
+				</label>
+				<input
+					id="password"
+					type="password"
+					bind:value={password}
+					required
+					placeholder="Enter password"
+					class="w-full px-4 py-3 bg-overlay border-2 border-overlay rounded-lg text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
+				/>
+			</div>
+
+			{#if error}
+				<div class="px-4 py-3 bg-red text-base rounded-lg font-medium">
+					{error}
+				</div>
+			{/if}
+
+			<button
+				type="submit"
+				disabled={loading}
+				class="w-full py-3 bg-blue text-base font-semibold rounded-lg hover:bg-sky transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+			>
+				{loading ? 'Loading...' : 'Register'}
+			</button>
+
+			<p class="text-center text-subtext">
+				Already have an account?
+				<a href="/" class="text-blue hover:text-sky font-medium transition-colors">Login</a>
+			</p>
+		</form>
+	</div>
+</main>
