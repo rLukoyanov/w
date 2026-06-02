@@ -12,7 +12,7 @@ import (
 	"github.com/rLukoyanov/w/apis/handlers"
 	"github.com/rLukoyanov/w/apis/middlewares"
 	"github.com/rLukoyanov/w/store"
-	"github.com/rLukoyanov/w/ui"
+	"github.com/rLukoyanov/w/web"
 )
 
 type Server struct {
@@ -75,7 +75,7 @@ func (s *Server) setupRoutes(jwtSecret string) {
 	protected.Post("/channels/:id/messages", messagesHandler.Create)
 
 	// Serve embedded SvelteKit frontend
-	distFS, err := fs.Sub(ui.DistFS, "dist")
+	distFS, err := fs.Sub(web.DistFS, "build")
 	if err != nil {
 		panic(fmt.Sprintf("failed to get dist subdirectory: %v", err))
 	}
