@@ -4,19 +4,34 @@ BIN_DIR=bin
 BIN_PATH=$(BIN_DIR)/$(APP_NAME)
 DB_PATH=./data.db
 MIGRATIONS_DIR=./store/sqlite/migrations
+UI_DIR=ui/dist
 
-.PHONY: build run migrate migrate-down clean
+.PHONY: build build-ui run dev migrate migrate-down clean
 
-build:
+build-ui:
+	@echo "📦 Building frontend..."
+	cd web && npm install && npm run build
+	@echo "📋 Copying build to ui/dist..."
+	rm -rf $(UI_DIR)
+	mkdir -p $(UI_DIR)
+	cp -r web/build/* $(UI_DIR)/
+
+build: build-ui
+	@echo "🔨 Building Go binary with embedded UI..."
 	mkdir -p $(BIN_DIR)
 	go build -o $(BIN_PATH) ./cmd/w
 
-run: build
-	@echo "🚀 Starting backend and frontend..."
+dev:
+	@echo "🚀 Starting backend and frontend in dev mode..."
 	@trap 'kill 0' EXIT; \
 	$(BIN_PATH) serve & \
 	sleep 2 && \
 	cd web && npm run dev
+
+run: build
+	@echo "🚀 Starting server with embedded UI..."
+	$(BIN_PATH) serve
+
 migrate:
 	goose -dir $(MIGRATIONS_DIR) sqlite3 $(DB_PATH) up
 
@@ -25,3 +40,5 @@ migrate-down:
 
 clean:
 	rm -f $(BIN_PATH)
+	rm -rf $(UI_DIR)
+	rm -rf web/build

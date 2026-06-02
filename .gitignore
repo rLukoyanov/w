@@ -17,6 +17,9 @@ docs
 *.db
 *.sqlite
 *.sqlite3
+.db
+.sqlite
+.sqlite3
 
 # SvelteKit
 /web/node_modules

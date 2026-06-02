@@ -2,13 +2,17 @@ package apis
 
 import (
 	"fmt"
+	"io/fs"
+	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/rLukoyanov/w/apis/handlers"
 	"github.com/rLukoyanov/w/apis/middlewares"
 	"github.com/rLukoyanov/w/store"
+	"github.com/rLukoyanov/w/ui"
 )
 
 type Server struct {
@@ -69,6 +73,19 @@ func (s *Server) setupRoutes(jwtSecret string) {
 	messagesHandler := handlers.NewMessagesHandler(s.store)
 	protected.Get("/channels/:id/messages", messagesHandler.GetByChannelID)
 	protected.Post("/channels/:id/messages", messagesHandler.Create)
+
+	// Serve embedded SvelteKit frontend
+	distFS, err := fs.Sub(ui.DistFS, "dist")
+	if err != nil {
+		panic(fmt.Sprintf("failed to get dist subdirectory: %v", err))
+	}
+
+	s.app.Use("/", filesystem.New(filesystem.Config{
+		Root:         http.FS(distFS),
+		Browse:       false,
+		Index:        "index.html",
+		NotFoundFile: "index.html", // SPA fallback
+	}))
 }
 
 func (s *Server) Start() error {
