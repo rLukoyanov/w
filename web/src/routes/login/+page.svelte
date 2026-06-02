@@ -36,14 +36,12 @@
 	}
 </script>
 
-<main class="min-h-screen flex items-center justify-center bg-gradient-to-br from-base via-surface to-overlay p-5 relative overflow-hidden">
-	<!-- Animated background elements -->
-	<div class="absolute top-0 left-0 w-96 h-96 bg-blue/20 rounded-full blur-3xl animate-pulse"></div>
-	<div class="absolute bottom-0 right-0 w-96 h-96 bg-sky/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
-	
-	<div class="glass rounded-2xl p-10 w-full max-w-md relative z-10 backdrop-blur-xl">
-		<h1 class="text-5xl font-bold bg-gradient-to-r from-blue to-sky bg-clip-text text-transparent text-center mb-4">W</h1>
-		<h2 class="text-xl font-medium text-subtext text-center mb-8">Welcome back</h2>
+<main class="min-h-screen flex items-center justify-center bg-base p-5">
+	<div class="bg-surface border border-border rounded-lg p-8 w-full max-w-sm">
+		<div class="text-center mb-8">
+			<h1 class="text-2xl font-semibold text-text mb-2">Sign in</h1>
+			<p class="text-sm text-subtext">Enter your credentials to continue</p>
+		</div>
 
 		<form
 			onsubmit={(e) => {
@@ -53,19 +51,19 @@
 			class="space-y-5"
 		>
 			<div>
-				<label for="email" class="block text-sm font-medium text-subtext mb-2">Email</label>
+				<label for="email" class="block text-xs font-medium text-subtext mb-1.5">Email</label>
 				<input
 					id="email"
 					type="email"
 					bind:value={email}
 					required
-					placeholder="Enter email"
-					class="glass-input w-full px-4 py-3 rounded-xl text-text placeholder-subtext/50 focus:outline-none transition-all duration-300"
+					placeholder="your@email.com"
+					class="w-full px-3 py-2 bg-overlay border border-border rounded text-sm text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
 				/>
 			</div>
 
 			<div>
-				<label for="password" class="block text-sm font-medium text-subtext mb-2">
+				<label for="password" class="block text-xs font-medium text-subtext mb-1.5">
 					Password
 				</label>
 				<input
@@ -73,13 +71,13 @@
 					type="password"
 					bind:value={password}
 					required
-					placeholder="Enter password"
-					class="glass-input w-full px-4 py-3 rounded-xl text-text placeholder-subtext/50 focus:outline-none transition-all duration-300"
+					placeholder="••••••••"
+					class="w-full px-3 py-2 bg-overlay border border-border rounded text-sm text-text placeholder-subtext/50 focus:outline-none focus:border-blue transition-colors"
 				/>
 			</div>
 
 			{#if error}
-				<div class="px-4 py-3 bg-gradient-to-r from-red to-pink text-white rounded-xl font-medium shadow-lg">
+				<div class="px-3 py-2 bg-red/10 border border-red/20 rounded text-sm text-red">
 					{error}
 				</div>
 			{/if}
@@ -87,15 +85,15 @@
 			<button
 				type="submit"
 				disabled={loading}
-				class="w-full py-3 bg-gradient-to-r from-blue to-sky text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue/50 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:scale-105"
+				class="w-full px-4 py-2 bg-blue text-white text-sm font-medium rounded hover:bg-blue/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 			>
-				{loading ? '⏳ Loading...' : '🚀 Login'}
+				{loading ? 'Signing in...' : 'Sign in'}
 			</button>
 
-			<p class="text-center text-subtext">
+			<p class="text-center text-sm text-subtext">
 				Don't have an account?
-				<a href="/register" class="text-blue hover:text-sky font-semibold transition-all duration-300 hover:underline">
-					Register →
+				<a href="/register" class="text-blue hover:underline">
+					Sign up
 				</a>
 			</p>
 		</form>

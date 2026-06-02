@@ -22,23 +22,29 @@
 	}
 </script>
 
-<main class="min-h-screen flex items-center justify-center bg-gradient-to-br from-base via-surface to-overlay p-5 relative overflow-hidden">
-	<!-- Animated background elements -->
-	<div class="absolute top-0 left-0 w-96 h-96 bg-blue/20 rounded-full blur-3xl animate-pulse"></div>
-	<div class="absolute bottom-0 right-0 w-96 h-96 bg-pink/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
-	
+<main class="min-h-screen flex items-center justify-center bg-base p-5">
 	{#if $auth.user}
-		<div class="glass rounded-2xl p-10 text-center relative z-10 backdrop-blur-xl">
-			<h1 class="text-5xl font-bold bg-gradient-to-r from-blue to-sky bg-clip-text text-transparent mb-8">Welcome, {$auth.user.username}!</h1>
-			<div class="glass rounded-xl p-6 mb-6 border border-blue/20">
-				<p class="text-subtext mb-2 text-lg">✉️ {$auth.user.email}</p>
-				<p class="text-subtext/60 text-sm font-mono">ID: {$auth.user.id}</p>
+		<div class="bg-surface border border-border rounded-lg p-8 max-w-md w-full">
+			<h1 class="text-2xl font-semibold text-text mb-6">Welcome back</h1>
+			<div class="bg-overlay border border-border rounded p-4 mb-6 space-y-2">
+				<div class="flex items-center justify-between">
+					<span class="text-sm text-subtext">Username</span>
+					<span class="text-sm text-text font-medium">{$auth.user.username}</span>
+				</div>
+				<div class="flex items-center justify-between">
+					<span class="text-sm text-subtext">Email</span>
+					<span class="text-sm text-text">{$auth.user.email}</span>
+				</div>
+				<div class="flex items-center justify-between">
+					<span class="text-sm text-subtext">ID</span>
+					<span class="text-xs text-subtext font-mono">{$auth.user.id}</span>
+				</div>
 			</div>
 			<button
 				onclick={handleLogout}
-				class="px-8 py-3 bg-gradient-to-r from-red to-pink text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-red/50 transition-all duration-300 hover:scale-105"
+				class="w-full px-4 py-2 bg-overlay border border-border text-text text-sm font-medium rounded hover:bg-base transition-colors"
 			>
-				Logout
+				Sign out
 			</button>
 		</div>
 	{/if}
