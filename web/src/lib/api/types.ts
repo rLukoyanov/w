@@ -28,6 +28,10 @@ export interface Server {
 	created_at: string;
 }
 
+export interface ServerWithChannels extends Server {
+	channels: Channel[];
+}
+
 export interface Channel {
 	id: string;
 	server_id: string;

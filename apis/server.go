@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -16,6 +17,7 @@ import (
 	"github.com/rLukoyanov/w/apis/ws"
 	"github.com/rLukoyanov/w/store"
 	"github.com/rLukoyanov/w/web"
+	"github.com/rs/zerolog/log"
 )
 
 type Server struct {
@@ -69,12 +71,15 @@ func (s *Server) setupRoutes(jwtSecret string) {
 	// Servers
 	serversHandler := handlers.NewServersHandler(s.store)
 	protected.Post("/servers", serversHandler.Create)
+	protected.Get("/servers", serversHandler.GetAll)
 	protected.Get("/servers/:id", serversHandler.GetByID)
 
 	// Channels
 	channelsHandler := handlers.NewChannelsHandler(s.store)
 	protected.Post("/servers/:id/channels", channelsHandler.Create)
+	protected.Get("/servers/:id/channels", channelsHandler.GetByServerID)
 	protected.Get("/channels/:id", channelsHandler.GetByID)
+	protected.Delete("/channels/:id", channelsHandler.Delete)
 
 	// Messages
 	messagesHandler := handlers.NewMessagesHandler(s.store)
@@ -98,6 +103,12 @@ func (s *Server) setupRoutes(jwtSecret string) {
 		Browse:       false,
 		Index:        "index.html",
 		NotFoundFile: "index.html", // SPA fallback
+		Next: func(c *fiber.Ctx) bool {
+			// Skip filesystem middleware for API and WebSocket routes
+			path := c.Path()
+			log.Debug().Str("path", path).Msg("checking if path should be handled by filesystem")
+			return strings.HasPrefix(path, "/api") || strings.HasPrefix(path, "/ws")
+		},
 	}))
 }
 

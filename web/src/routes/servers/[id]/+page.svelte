@@ -1,145 +1,190 @@
 <script lang="ts">
   import {
     type Server,
+    type ServerWithChannels,
     type Channel,
     channelsClient,
     serversClient,
   } from "$lib/api/index";
-  import { goto } from "$app/navigation";
-  import { onMount } from "svelte";
+  import { untrack } from "svelte";
+  import { ROUTES } from "$lib/routes";
+  import { Hash, XCircle } from "lucide-svelte";
+  import ChannelItem from "$lib/components/ChannelItem.svelte";
+  import CreateChannelForm from "$lib/components/CreateChannelForm.svelte";
 
-  let { params } = $props();
+  interface Props {
+    params: { id: string };
+  }
 
+  let { params }: Props = $props();
+
+  // Server data state
   let server = $state<Server | null>(null);
   let channels = $state<Channel[]>([]);
-  let loading = $state(true);
-  let error = $state("");
-  let showCreateChannel = $state(false);
-  let newChannelName = $state("");
-  let createError = $state("");
+  let isLoading = $state(true);
+  let serverError = $state<string | null>(null);
 
-  onMount(async () => {
-    try {
-      server = await serversClient.get(params.id);
-      // Load channels when we add the API endpoint
-      // For now, show empty state
-      loading = false;
-    } catch (err: any) {
-      error = err.message;
-      loading = false;
-    }
+  // Channel creation state
+  let isCreating = $state(false);
+  let newChannelName = $state("");
+  let channelType = $state<"text" | "voice">("text");
+  let createError = $state<string | null>(null);
+
+  // Derived values
+  const channelCountText = $derived(
+    channels.length === 1 ? "1 channel" : `${channels.length} channels`,
+  );
+  const hasChannels = $derived(channels.length > 0);
+  const isFormValid = $derived(newChannelName.trim().length > 0);
+
+  // Load server data with abort controller for cleanup
+  $effect(() => {
+    const serverId = params.id;
+    const controller = new AbortController();
+
+    isLoading = true;
+    serverError = null;
+
+    untrack(async () => {
+      try {
+        const response = await serversClient.get(serverId);
+        const data = response as ServerWithChannels;
+
+        if (!controller.signal.aborted) {
+          server = {
+            id: data.id,
+            name: data.name,
+            owner_id: data.owner_id,
+            created_at: data.created_at,
+          };
+          channels = data.channels || [];
+          isLoading = false;
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          serverError =
+            err instanceof Error ? err.message : "Failed to load server";
+          isLoading = false;
+        }
+      }
+    });
+
+    return () => controller.abort();
   });
 
-  async function handleCreateChannel() {
-    if (!newChannelName.trim()) {
+  function resetCreateForm(): void {
+    isCreating = false;
+    createError = null;
+    newChannelName = "";
+    channelType = "text";
+  }
+
+  async function handleCreateChannel(): Promise<void> {
+    if (!isFormValid) {
       createError = "Channel name is required";
       return;
     }
 
     try {
-      const channel = await channelsClient.create(params.id, newChannelName);
-      channels.push(channel);
-      newChannelName = "";
-      showCreateChannel = false;
-      createError = "";
+      const channel = await channelsClient.create(
+        params.id,
+        newChannelName,
+        channelType,
+      );
+      channels = [...channels, channel];
+      resetCreateForm();
+    } catch (err) {
+      createError =
+        err instanceof Error ? err.message : "Failed to create channel";
+    }
+  }
 
-      // Navigate to the new channel
-      goto(`/servers/${params.id}/channels/${channel.id}`);
-    } catch (err: any) {
-      createError = err.message;
+  async function handleDeleteChannel(
+    channelId: string,
+    event: MouseEvent,
+  ): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Optimistic update: remove from UI immediately
+    const deletedChannel = channels.find((ch) => ch.id === channelId);
+    if (!deletedChannel) return;
+
+    channels = channels.filter((ch) => ch.id !== channelId);
+
+    try {
+      await channelsClient.delete(channelId);
+    } catch (err) {
+      // Rollback on error: restore the channel
+      console.error("Failed to delete channel:", err);
+      channels = [...channels, deletedChannel].sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
+    }
+  }
+
+  function handleKeyDown(event: KeyboardEvent): void {
+    if (event.key === "Enter") {
+      handleCreateChannel();
+    } else if (event.key === "Escape") {
+      resetCreateForm();
+    } else if (event.key === "Tab") {
+      event.preventDefault();
+      channelType = channelType === "text" ? "voice" : "text";
+    }
+  }
+
+  function handleBlur(): void {
+    if (!isFormValid) {
+      resetCreateForm();
     }
   }
 </script>
 
-<main class="min-h-screen bg-base text-text">
-  <!-- Top bar -->
-  <div class="border-b border-border bg-surface">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-      <a href="/" class="text-sm text-subtext hover:text-text"
-        >← Back to servers</a
-      >
-      {#if server}
-        <h1 class="text-xl font-semibold">{server.name}</h1>
-      {/if}
-    </div>
-  </div>
-
-  <!-- Content -->
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    {#if loading}
-      <div class="text-center py-12">
-        <p class="text-subtext">Loading...</p>
+<main class="min-h-screen bg-base-200">
+  <div class="p-4 max-w-2xl">
+    {#if isLoading}
+      <div class="flex justify-center py-12">
+        <span class="loading loading-spinner loading-lg"></span>
       </div>
-    {:else if error}
-      <div class="bg-surface border border-red rounded-lg p-6">
-        <p class="text-red">{error}</p>
+    {:else if serverError}
+      <div role="alert" class="alert alert-error">
+        <XCircle class="w-6 h-6" />
+        <span>{serverError}</span>
       </div>
     {:else if server}
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-semibold">Channels</h2>
-        <button
-          onclick={() => (showCreateChannel = !showCreateChannel)}
-          class="px-4 py-2 bg-blue text-text text-sm font-medium rounded hover:bg-blue/80 transition-colors"
-        >
-          Create Channel
-        </button>
+      <!-- Server Header -->
+      <header class="mb-8">
+        <h1 class="text-4xl font-bold mb-2">{server.name}</h1>
+        <p class="text-base-content/60">{channelCountText}</p>
+      </header>
+
+      <!-- Channels List -->
+
+      <div class="space-y-1 mb-6">
+        {#each channels as channel (channel.id)}
+          <ChannelItem
+            {channel}
+            serverId={params.id}
+            channelUrl={ROUTES.SERVER.CHANNEL(params.id, channel.id)}
+            onDelete={handleDeleteChannel}
+          />
+        {/each}
       </div>
 
-      {#if showCreateChannel}
-        <div class="bg-surface border border-border rounded-lg p-6 mb-6">
-          <h3 class="text-lg font-medium mb-4">Create a new channel</h3>
-          <input
-            type="text"
-            bind:value={newChannelName}
-            placeholder="Channel name"
-            class="w-full px-4 py-2 bg-overlay border border-border rounded text-text placeholder:text-subtext focus:outline-none focus:ring-2 focus:ring-blue mb-3"
-          />
-          {#if createError}
-            <p class="text-sm text-red mb-3">{createError}</p>
-          {/if}
-          <div class="flex gap-2">
-            <button
-              onclick={handleCreateChannel}
-              class="px-4 py-2 bg-blue text-text text-sm font-medium rounded hover:bg-blue/80 transition-colors"
-            >
-              Create
-            </button>
-            <button
-              onclick={() => {
-                showCreateChannel = false;
-                createError = "";
-                newChannelName = "";
-              }}
-              class="px-4 py-2 bg-overlay border border-border text-text text-sm font-medium rounded hover:bg-border/50 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      {/if}
-
-      {#if channels.length === 0}
-        <div
-          class="bg-surface border border-border rounded-lg p-12 text-center"
-        >
-          <p class="text-subtext mb-4">No channels yet.</p>
-          <p class="text-sm text-subtext">
-            Create your first channel to start chatting!
-          </p>
-        </div>
-      {:else}
-        <div class="space-y-2">
-          {#each channels as channel}
-            <a
-              href="/servers/{params.id}/channels/{channel.id}"
-              class="block bg-surface border border-border rounded-lg p-4 hover:bg-overlay transition-colors"
-            >
-              <h3 class="text-lg font-medium"># {channel.name}</h3>
-              <p class="text-xs text-subtext mt-1">{channel.type} channel</p>
-            </a>
-          {/each}
-        </div>
-      {/if}
+      <!-- Create Channel Form -->
+      <CreateChannelForm
+        {isCreating}
+        channelName={newChannelName}
+        {channelType}
+        error={createError}
+        onToggle={() => (isCreating = true)}
+        onNameChange={(name) => (newChannelName = name)}
+        onTypeChange={(type) => (channelType = type)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+      />
     {/if}
   </div>
 </main>

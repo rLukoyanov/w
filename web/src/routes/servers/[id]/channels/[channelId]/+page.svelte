@@ -8,6 +8,8 @@
   import { wsClient, wsConnected } from "$lib/websocket";
   import { auth } from "$lib/stores/auth";
   import { onMount, onDestroy } from "svelte";
+  import { goto } from "$app/navigation";
+  import { Hash, XCircle, MessageCircle, Send, AlertTriangle } from "lucide-svelte";
 
   let { params } = $props();
 
@@ -16,7 +18,7 @@
   let loading = $state(true);
   let error = $state("");
   let messageInput = $state("");
-  let messagesContainer: HTMLDivElement;
+  let messagesContainer = $state<HTMLDivElement | null>(null);
 
   onMount(async () => {
     try {
@@ -100,102 +102,158 @@
       minute: "2-digit",
     });
   }
+
+  function getInitials(userId: string): string {
+    return userId.slice(0, 2).toUpperCase();
+  }
+
+  function getUsername(userId: string): string {
+    return userId.slice(0, 8);
+  }
+
+  const avatarColors = [
+    "bg-primary",
+    "bg-secondary",
+    "bg-accent",
+    "bg-info",
+    "bg-success",
+    "bg-warning",
+  ];
+
+  function getUserColor(userId: string): string {
+    const index =
+      userId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
+      avatarColors.length;
+    return avatarColors[index];
+  }
 </script>
 
-<main class="h-screen flex flex-col bg-base text-text">
-  <!-- Top bar -->
-  <div class="border-b border-border bg-surface">
-    <div class="px-4 py-4 flex items-center gap-4">
-      <a
-        href="/servers/{params.id}"
-        class="text-sm text-subtext hover:text-text">← Back</a
-      >
-      {#if channel}
-        <h1 class="text-xl font-semibold"># {channel.name}</h1>
-      {/if}
-      <div class="ml-auto flex items-center gap-2">
-        <div
-          class="w-2 h-2 rounded-full"
-          class:bg-green-500={$wsConnected}
-          class:bg-red-500={!$wsConnected}
-        ></div>
-        <span class="text-xs text-subtext"
-          >{$wsConnected ? "Live" : "Offline"}</span
-        >
+<div class="flex flex-col h-screen bg-base-200">
+  <!-- Navbar with breadcrumbs -->
+  <div class="navbar bg-base-100 shadow-md">
+    <div class="flex-1">
+      <div class="breadcrumbs text-sm">
+        <ul>
+          <li>
+            <a href="/app" class="link link-hover">Home</a>
+          </li>
+          <li>
+            <a href="/app/{params.id}" class="link link-hover">Server</a>
+          </li>
+          {#if channel}
+            <li>
+              <span class="flex items-center gap-1">
+                <Hash class="w-4 h-4" />
+                {channel.name}
+              </span>
+            </li>
+          {/if}
+        </ul>
       </div>
+    </div>
+    <div class="flex-none gap-2">
+      <!-- WebSocket status badge -->
+      {#if $wsConnected}
+        <div class="badge badge-success gap-2">
+          <div class="w-2 h-2 rounded-full bg-success-content animate-pulse"></div>
+          Connected
+        </div>
+      {:else}
+        <div class="badge badge-error gap-2">
+          <div class="w-2 h-2 rounded-full bg-error-content"></div>
+          Disconnected
+        </div>
+      {/if}
     </div>
   </div>
 
   {#if loading}
     <div class="flex-1 flex items-center justify-center">
-      <p class="text-subtext">Loading...</p>
+      <span class="loading loading-spinner loading-lg"></span>
     </div>
   {:else if error}
-    <div class="flex-1 flex items-center justify-center">
-      <div class="bg-surface border border-red rounded-lg p-6">
-        <p class="text-red">{error}</p>
+    <div class="flex-1 flex items-center justify-center p-4">
+      <div class="alert alert-error">
+        <XCircle class="w-6 h-6" />
+        <span>{error}</span>
       </div>
     </div>
   {:else}
-    <!-- Messages -->
+    <!-- Messages container -->
     <div
       bind:this={messagesContainer}
-      class="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+      class="flex-1 overflow-y-auto p-4 space-y-4"
     >
       {#if messages.length === 0}
-        <div class="text-center py-12">
-          <p class="text-subtext">No messages yet. Start the conversation!</p>
+        <div class="hero min-h-full">
+          <div class="hero-content text-center">
+            <div class="max-w-md">
+              <div class="mb-4">
+                <MessageCircle class="w-24 h-24 mx-auto text-base-content/20" />
+              </div>
+              <h1 class="text-3xl font-bold">No messages yet</h1>
+              <p class="py-4 text-base-content/60">
+                Start the conversation! Send the first message in this channel.
+              </p>
+            </div>
+          </div>
         </div>
       {:else}
         {#each messages as message}
-          <div class="flex gap-3">
-            <div
-              class="flex-shrink-0 w-10 h-10 rounded-full bg-blue flex items-center justify-center text-sm font-medium"
-            >
-              {message.author_id.slice(0, 2).toUpperCase()}
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-baseline gap-2 mb-1">
-                <span class="text-sm font-medium"
-                  >{message.author_id.slice(0, 8)}</span
-                >
-                <span class="text-xs text-subtext"
-                  >{formatTime(message.created_at)}</span
-                >
-                {#if message.author_id === $auth.user?.id}
-                  <span class="text-xs text-blue">You</span>
-                {/if}
+          <div
+            class="chat"
+            class:chat-end={message.author_id === $auth.user?.id}
+            class:chat-start={message.author_id !== $auth.user?.id}
+          >
+            <div class="chat-image avatar">
+              <div
+                class="w-10 rounded-full {getUserColor(message.author_id)} text-base-100 flex items-center justify-center font-semibold"
+              >
+                {getInitials(message.author_id)}
               </div>
-              <p class="text-sm text-text break-words">{message.content}</p>
+            </div>
+            <div class="chat-header">
+              {getUsername(message.author_id)}
+              <time class="text-xs opacity-50 ml-1">
+                {formatTime(message.created_at)}
+              </time>
+            </div>
+            <div
+              class="chat-bubble"
+              class:chat-bubble-primary={message.author_id === $auth.user?.id}
+            >
+              {message.content}
             </div>
           </div>
         {/each}
       {/if}
     </div>
 
-    <!-- Input -->
-    <div class="border-t border-border bg-surface p-4">
+    <!-- Message input -->
+    <div class="bg-base-100 border-t border-base-300 p-4">
       <form onsubmit={handleSendMessage} class="flex gap-2">
         <input
           type="text"
           bind:value={messageInput}
           placeholder="Type a message..."
-          class="flex-1 px-4 py-2 bg-overlay border border-border rounded text-text placeholder:text-subtext focus:outline-none focus:ring-2 focus:ring-blue"
+          class="input input-bordered flex-1"
           disabled={!$wsConnected && loading}
         />
         <button
           type="submit"
           disabled={!messageInput.trim() || (!$wsConnected && loading)}
-          class="px-6 py-2 bg-blue text-text text-sm font-medium rounded hover:bg-blue/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn btn-primary"
         >
+          <Send class="w-5 h-5" />
           Send
         </button>
       </form>
       {#if !$wsConnected}
-        <p class="text-xs text-red mt-2">
-          ⚠️ Disconnected - messages will use HTTP fallback
-        </p>
+        <div class="alert alert-warning mt-2">
+          <AlertTriangle class="w-5 h-5" />
+          <span>WebSocket disconnected - using HTTP fallback</span>
+        </div>
       {/if}
     </div>
   {/if}
-</main>
+</div>

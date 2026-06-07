@@ -1,54 +1,59 @@
-const API_URL = 'http://localhost:8090/api';
+const API_URL = "http://localhost:8090/api";
 
 export class BaseClient {
-	private token: string | null = null;
+  private token: string | null = null;
 
-	constructor() {
-		if (typeof window !== 'undefined') {
-			this.token = localStorage.getItem('token');
-		}
-	}
+  constructor() {
+    if (typeof window !== "undefined") {
+      this.token = localStorage.getItem("token");
+    }
+  }
 
-	setToken(token: string) {
-		this.token = token;
-		if (typeof window !== 'undefined') {
-			localStorage.setItem('token', token);
-		}
-	}
+  setToken(token: string) {
+    this.token = token;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("token", token);
+    }
+  }
 
-	clearToken() {
-		this.token = null;
-		if (typeof window !== 'undefined') {
-			localStorage.removeItem('token');
-		}
-	}
+  clearToken() {
+    this.token = null;
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+    }
+  }
 
-	getToken(): string | null {
-		return this.token;
-	}
+  getToken(): string | null {
+    return this.token;
+  }
 
-	protected async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-		const headers: Record<string, string> = {
-			'Content-Type': 'application/json',
-			...(options.headers as Record<string, string>)
-		};
+  protected async request(
+    endpoint: string,
+    options: RequestInit = {},
+  ): Promise<Response> {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
+    };
 
-		if (this.token) {
-			headers['Authorization'] = `Bearer ${this.token}`;
-		}
+    if (this.token) {
+      headers["Authorization"] = `Bearer ${this.token}`;
+    }
 
-		const response = await fetch(`${API_URL}${endpoint}`, {
-			...options,
-			headers
-		});
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
-		if (!response.ok) {
-			const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-			throw new Error(error.error || `HTTP ${response.status}`);
-		}
+    if (!response.ok) {
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
+      throw new Error(error.error || `HTTP ${response.status}`);
+    }
 
-		return response.json();
-	}
+    return response;
+  }
 }
 
 export const baseClient = new BaseClient();

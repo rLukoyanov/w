@@ -3,14 +3,16 @@ import type { Message } from './types';
 
 class MessagesClient {
 	async get(channelId: string, limit: number = 50): Promise<Message[]> {
-		return baseClient['request']<Message[]>(`/channels/${channelId}/messages?limit=${limit}`);
+		const res = await baseClient['request'](`/channels/${channelId}/messages?limit=${limit}`);
+		return res.json();
 	}
 
 	async create(channelId: string, content: string): Promise<Message> {
-		return baseClient['request']<Message>(`/channels/${channelId}/messages`, {
+		const res = await baseClient['request'](`/channels/${channelId}/messages`, {
 			method: 'POST',
 			body: JSON.stringify({ content })
 		});
+		return res.json();
 	}
 }
 

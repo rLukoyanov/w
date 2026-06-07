@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/rLukoyanov/w/apis/requests"
+	"github.com/rLukoyanov/w/apis/response"
 	"github.com/rLukoyanov/w/core/models"
 	"github.com/rLukoyanov/w/store"
 )
@@ -59,5 +60,41 @@ func (h *ServersHandler) GetByID(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(server)
+	// Get channels for this server
+	channels, err := h.store.Channels().GetByServerID(serverID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to get channels",
+		})
+	}
+
+	// Return empty array instead of null if no channels
+	if channels == nil {
+		channels = []*models.Channel{}
+	}
+
+	resp := &response.ServerWithChannels{
+		Server:   server,
+		Channels: channels,
+	}
+
+	return c.JSON(resp)
+}
+
+func (h *ServersHandler) GetAll(c *fiber.Ctx) error {
+	userID := c.Locals("userID").(string)
+
+	servers, err := h.store.Servers().GetByOwnerID(userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to get servers",
+		})
+	}
+
+	// Return empty array instead of null if no servers
+	if servers == nil {
+		servers = []*models.Server{}
+	}
+
+	return c.JSON(servers)
 }

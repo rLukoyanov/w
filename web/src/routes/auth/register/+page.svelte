@@ -2,6 +2,8 @@
   import { userClient } from "$lib/api/index";
   import { auth } from "$lib/stores/auth";
   import { goto } from "$app/navigation";
+  import { XCircle } from "lucide-svelte";
+  import { ROUTES } from "$lib/routes";
 
   let email = $state<string>("");
   let password = $state<string>("");
@@ -20,7 +22,7 @@
         password: password,
       });
       auth.setUser(response.user);
-      goto("/");
+      goto(ROUTES.SERVER.INDEX);
     } catch (e) {
       error = e instanceof Error ? e.message : "An error occurred";
     } finally {
@@ -85,19 +87,7 @@
 
   {#if error}
     <div role="alert" class="alert alert-error">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="stroke-current shrink-0 h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
+      <XCircle class="w-6 h-6" />
       <span>{error}</span>
     </div>
   {/if}

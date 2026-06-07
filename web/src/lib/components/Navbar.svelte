@@ -1,23 +1,64 @@
-<nav class="navbar w-full bg-base-300">
-  <label
-    for="my-drawer-4"
-    aria-label="open sidebar"
-    class="btn btn-square btn-ghost"
-  >
-    <!-- Sidebar toggle icon -->
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      stroke-linejoin="round"
-      stroke-linecap="round"
-      stroke-width="2"
-      fill="none"
-      stroke="currentColor"
-      class="my-1.5 inline-block size-4"
-      ><path
-        d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"
-      ></path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg
-    >
-  </label>
-  <div class="px-4">Weche</div>
+<script>
+  import Avatar from "./Avatar.svelte";
+  import { userClient } from "$lib/api/index";
+  import { auth } from "$lib/stores/auth";
+  import { goto } from "$app/navigation";
+  import { wsClient } from "$lib/websocket";
+  import { Server, Settings } from "lucide-svelte";
+  import { page } from "$app/state";
+  import { ROUTES } from "$lib/routes";
+
+  function handleLogout() {
+    wsClient.disconnect();
+    userClient.clearToken();
+    auth.logout();
+    goto(ROUTES.AUTH.LOGIN);
+  }
+
+  const routes = [
+    { name: "Servers", icon: Server, path: ROUTES.SERVER.INDEX },
+    { name: "Settings", icon: Settings, path: ROUTES.SETTINGS },
+  ];
+</script>
+
+<nav class="navbar w-full min-h-8 bg-transparent">
+  <div class="flex w-full justify-between items-center">
+    <div class="flex gap-1">
+      {#each routes as route}
+        <button
+          class="btn btn-neutral text-white btn-ghost gap-2 btn-xs hover:bg-white/20 border-0 {page.url.pathname.includes(
+            route.path,
+          )
+            ? 'bg-white/20'
+            : ''}"
+          onclick={() => goto(route.path)}
+        >
+          <route.icon class="w-4 h-4" />
+          {route.name}
+        </button>
+      {/each}
+    </div>
+
+    {#if $auth.user}
+      <details class="dropdown dropdown-end dropdown-hover">
+        <summary
+          class="btn btn-xs btn-ghost btn-neutral text-white flex gap-2 hover:bg-white/20 border-0"
+        >
+          <div>{$auth.user.username}</div>
+          <Avatar />
+        </summary>
+        <ul
+          class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+        >
+          <li class="menu-title">
+            <span class="text-xs text-base-content">{$auth.user.email}</span>
+          </li>
+
+          <li>
+            <button onclick={handleLogout} class="text-error">Sign out</button>
+          </li>
+        </ul>
+      </details>
+    {/if}
+  </div>
 </nav>
