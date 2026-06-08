@@ -34,3 +34,19 @@ type MessagesRepository interface {
 	Update(message *models.Message) error
 	Delete(id string) error
 }
+
+type ServerMembersRepository interface {
+	Add(serverID, userID string) error
+	Remove(serverID, userID string) error
+	GetMembers(serverID string) ([]*models.ServerMember, error)
+	IsMember(serverID, userID string) (bool, error)
+	GetServerIDsByUser(userID string) ([]string, error)
+}
+
+type ServerInvitesRepository interface {
+	Create(invite *models.ServerInvite) error
+	GetByCode(code string) (*models.ServerInvite, error)
+	GetByServerID(serverID string) ([]*models.ServerInvite, error)
+	IncrementUseCount(id string) error
+	Delete(id string) error
+}

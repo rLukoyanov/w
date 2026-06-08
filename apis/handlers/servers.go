@@ -19,6 +19,70 @@ func NewServersHandler(store store.Store) *ServersHandler {
 	return &ServersHandler{store: store}
 }
 
+type MemberInfo struct {
+	UserID   string `json:"user_id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	JoinedAt string `json:"joined_at"`
+	IsOwner  bool   `json:"is_owner"`
+}
+
+func (h *ServersHandler) GetMembers(c *fiber.Ctx) error {
+	serverID := c.Params("id")
+
+	server, err := h.store.Servers().GetByID(serverID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "database error",
+		})
+	}
+	if server == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "server not found",
+		})
+	}
+
+	members, err := h.store.ServerMembers().GetMembers(serverID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to get members",
+		})
+	}
+
+	result := make([]MemberInfo, 0, len(members)+1)
+
+	// Always include owner
+	owner, err := h.store.Users().GetByID(server.OwnerID)
+	if err == nil && owner != nil {
+		result = append(result, MemberInfo{
+			UserID:   owner.ID,
+			Username: owner.Username,
+			Email:    owner.Email,
+			JoinedAt: server.CreatedAt.Format("2006-01-02T15:04:05Z"),
+			IsOwner:  true,
+		})
+	}
+
+	for _, m := range members {
+		if m.UserID == server.OwnerID {
+			continue // already added
+		}
+		user, err := h.store.Users().GetByID(m.UserID)
+		if err != nil || user == nil {
+			continue
+		}
+		result = append(result, MemberInfo{
+			UserID:   user.ID,
+			Username: user.Username,
+			Email:    user.Email,
+			JoinedAt: m.JoinedAt.Format("2006-01-02T15:04:05Z"),
+			IsOwner:  false,
+		})
+	}
+
+	return c.JSON(result)
+}
+
 func (h *ServersHandler) Create(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(string)
 

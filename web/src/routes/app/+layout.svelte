@@ -9,6 +9,7 @@
   import { page } from "$app/state";
   import CreateServerModal from "$lib/components/CreateServerModal.svelte";
   import { wsClient } from "$lib/websocket";
+  import { Plus } from "lucide-svelte";
 
   let { children } = $props();
 

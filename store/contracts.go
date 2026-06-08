@@ -10,4 +10,6 @@ type Store interface {
 	Servers() repository.ServersRepository
 	Channels() repository.ChannelsRepository
 	Messages() repository.MessagesRepository
+	ServerMembers() repository.ServerMembersRepository
+	ServerInvites() repository.ServerInvitesRepository
 }

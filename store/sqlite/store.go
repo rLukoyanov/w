@@ -9,11 +9,13 @@ import (
 )
 
 type Store struct {
-	db       *sql.DB
-	users    repository.UsersRepository
-	servers  repository.ServersRepository
-	channels repository.ChannelsRepository
-	messages repository.MessagesRepository
+	db             *sql.DB
+	users          repository.UsersRepository
+	servers        repository.ServersRepository
+	channels       repository.ChannelsRepository
+	messages       repository.MessagesRepository
+	serverMembers  repository.ServerMembersRepository
+	serverInvites  repository.ServerInvitesRepository
 }
 
 func New(dsn string) (*Store, error) {
@@ -24,11 +26,13 @@ func New(dsn string) (*Store, error) {
 	}
 
 	return &Store{
-		db:       db,
-		users:    &UsersRepository{db: db},
-		servers:  &ServersRepository{db: db},
-		channels: &ChannelsRepository{db: db},
-		messages: &MessagesRepository{db: db},
+		db:            db,
+		users:         &UsersRepository{db: db},
+		servers:       &ServersRepository{db: db},
+		channels:      &ChannelsRepository{db: db},
+		messages:      &MessagesRepository{db: db},
+		serverMembers: &ServerMembersRepository{db: db},
+		serverInvites: &ServerInvitesRepository{db: db},
 	}, nil
 }
 
@@ -46,6 +50,14 @@ func (s *Store) Channels() repository.ChannelsRepository {
 
 func (s *Store) Messages() repository.MessagesRepository {
 	return s.messages
+}
+
+func (s *Store) ServerMembers() repository.ServerMembersRepository {
+	return s.serverMembers
+}
+
+func (s *Store) ServerInvites() repository.ServerInvitesRepository {
+	return s.serverInvites
 }
 
 func (s *Store) Migrate(migrationsDir string) error {

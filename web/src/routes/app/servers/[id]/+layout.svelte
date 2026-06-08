@@ -13,6 +13,7 @@
   import CreateChannelForm from "$lib/components/CreateChannelForm.svelte";
   import { notify } from "$lib/stores/notifications";
   import { goto } from "$app/navigation";
+  import { Settings } from "lucide-svelte";
 
   interface Props {
     params: { id: string };
@@ -130,10 +131,21 @@
   <div class="grid grid-cols-[300px_1fr] h-full bg-base-200">
     <div class="flex flex-col overflow-y-auto border-r border-base-300">
       <header class="px-3 py-2 border-b border-base-300">
-        <h1 class="text-sm font-bold">{server.name}</h1>
-        <p class="text-[10px] text-base-content/60">
-          {channels.length} channel{channels.length !== 1 ? "s" : ""}
-        </p>
+        <div class="flex items-center justify-between">
+          <div class="min-w-0">
+            <h1 class="text-sm font-bold truncate">{server.name}</h1>
+            <p class="text-[10px] text-base-content/60">
+              {channels.length} channel{channels.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <a
+            href={ROUTES.SERVER.SETTINGS(params.id)}
+            class="btn btn-ghost btn-xs btn-square shrink-0 transition-all duration-200 hover:rotate-90 hover:scale-110 hover:bg-base-300 hover:text-primary"
+            aria-label="Server settings"
+          >
+            <Settings class="w-3.5 h-3.5 transition-all duration-200" />
+          </a>
+        </div>
       </header>
 
       <div class="flex-1 p-1 space-y-px">
