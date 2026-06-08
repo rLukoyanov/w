@@ -61,12 +61,12 @@
     <span class="loading loading-spinner loading-lg"></span>
   </div>
 {:else}
-  <div class="drawer lg:drawer-open bg-secondary/50">
+  <div class="drawer lg:drawer-open bg-secondary/50 h-dvh">
     <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-    <div class="drawer-content">
+    <div class="drawer-content max-h-dvh grid grid-rows-[40px_1fr]">
       <Navbar />
-      <div class="rounded-2xl overflow-hidden">
-        <main class="min-h-screen bg-base-200 grid grid-cols-[72px_1fr]">
+      <div class="rounded-2xl overflow-hidden h-full">
+        <main class="bg-base-200 grid grid-cols-[72px_1fr] h-full">
           <div class="flex flex-col items-center gap-2 px-2 py-3">
             {#each servers as server}
               <ServerCard {server} active={server.id === activeServerId} />

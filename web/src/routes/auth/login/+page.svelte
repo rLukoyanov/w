@@ -2,16 +2,14 @@
   import { userClient } from "$lib/api/index";
   import { auth } from "$lib/stores/auth";
   import { goto } from "$app/navigation";
-  import { XCircle } from "lucide-svelte";
   import { ROUTES } from "$lib/routes";
+  import { notify } from "$lib/stores/notifications";
 
   let email = $state<string>("");
   let password = $state<string>("");
-  let error = $state<string>("");
   let loading = $state<boolean>(false);
 
   async function handleSubmit() {
-    error = "";
     loading = true;
 
     try {
@@ -19,7 +17,7 @@
       auth.setUser(response.user);
       goto(ROUTES.SERVER.INDEX);
     } catch (e) {
-      error = e instanceof Error ? e.message : "An error occurred";
+      notify.error(e instanceof Error ? e.message : "An error occurred");
     } finally {
       loading = false;
     }
@@ -65,13 +63,6 @@
       class="input input-bordered w-full"
     />
   </div>
-
-  {#if error}
-    <div role="alert" class="alert alert-error">
-      <XCircle class="w-6 h-6" />
-      <span>{error}</span>
-    </div>
-  {/if}
 
   <div class="form-control mt-6">
     <button type="submit" disabled={loading} class="btn btn-primary w-full">

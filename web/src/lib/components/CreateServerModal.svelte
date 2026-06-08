@@ -2,7 +2,8 @@
   import { fly } from "svelte/transition";
   import type { Server } from "$lib/api";
   import { serversClient } from "$lib/api";
-  import { XCircle, Plus } from "lucide-svelte";
+  import { Plus } from "lucide-svelte";
+  import { notify } from "$lib/stores/notifications";
 
   interface Props {
     show: boolean;
@@ -13,14 +14,12 @@
   let { show, onClose, onCreated }: Props = $props();
 
   let name = $state("");
-  let error = $state<string | null>(null);
   let creating = $state(false);
   let inputEl = $state<HTMLInputElement | null>(null);
 
   $effect(() => {
     if (show) {
       name = "";
-      error = null;
       creating = false;
     }
   });
@@ -34,19 +33,18 @@
   async function handleSubmit() {
     const trimmed = name.trim();
     if (!trimmed) {
-      error = "Server name is required";
+      notify.error("Server name is required");
       return;
     }
 
     creating = true;
-    error = null;
 
     try {
       const server = await serversClient.create(trimmed);
       onCreated(server);
       onClose();
     } catch (err: any) {
-      error = err.message ?? "Failed to create server";
+      notify.error(err.message ?? "Failed to create server");
     } finally {
       creating = false;
     }
@@ -89,13 +87,6 @@
           disabled={creating}
           onkeydown={handleKeydown}
         />
-
-        {#if error}
-          <div role="alert" class="alert alert-error py-2">
-            <XCircle class="w-5 h-5 shrink-0" />
-            <span class="text-sm">{error}</span>
-          </div>
-        {/if}
       </div>
 
       <div class="modal-action">

@@ -2,7 +2,8 @@
   import { getContext } from "svelte";
   import { goto } from "$app/navigation";
   import { serversClient, type Server } from "$lib/api";
-  import { Plus, XCircle, Server as ServerIcon } from "lucide-svelte";
+  import { Plus, Server as ServerIcon } from "lucide-svelte";
+  import { notify } from "$lib/stores/notifications";
 
   let ctx = getContext<{
     servers: Server[];
@@ -12,28 +13,25 @@
 
   let showCreateServer = $state(false);
   let newServerName = $state("");
-  let createError = $state("");
   let isCreating = $state(false);
 
   async function handleCreateServer() {
     if (!newServerName.trim()) {
-      createError = "Server name is required";
+      notify.error("Server name is required");
       return;
     }
 
     isCreating = true;
-    createError = "";
 
     try {
       const server = await serversClient.create(newServerName);
       newServerName = "";
       showCreateServer = false;
-      createError = "";
       isCreating = false;
 
       goto(`/servers/${server.id}`);
     } catch (err: any) {
-      createError = err.message;
+      notify.error(err.message ?? "Failed to create server");
       isCreating = false;
     }
   }
@@ -41,7 +39,6 @@
   function resetForm() {
     showCreateServer = false;
     newServerName = "";
-    createError = "";
   }
 </script>
 
@@ -68,12 +65,6 @@
             class="input input-bordered w-full"
             disabled={isCreating}
           />
-          {#if createError}
-            <div role="alert" class="alert alert-error">
-              <XCircle class="w-5 h-5" />
-              <span>{createError}</span>
-            </div>
-          {/if}
           <div class="flex gap-2">
             <button
               onclick={handleCreateServer}
@@ -118,12 +109,6 @@
             class="input input-bordered w-full"
             disabled={isCreating}
           />
-          {#if createError}
-            <div role="alert" class="alert alert-error">
-              <XCircle class="w-5 h-5" />
-              <span>{createError}</span>
-            </div>
-          {/if}
           <div class="flex gap-2">
             <button
               onclick={handleCreateServer}
