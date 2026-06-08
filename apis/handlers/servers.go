@@ -98,3 +98,74 @@ func (h *ServersHandler) GetAll(c *fiber.Ctx) error {
 
 	return c.JSON(servers)
 }
+
+func (h *ServersHandler) Update(c *fiber.Ctx) error {
+	userID := c.Locals("userID").(string)
+	serverID := c.Params("id")
+
+	server, err := h.store.Servers().GetByID(serverID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "database error",
+		})
+	}
+	if server == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "server not found",
+		})
+	}
+
+	if server.OwnerID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "you are not the owner of this server",
+		})
+	}
+
+	var req requests.UpdateServer
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request body",
+		})
+	}
+
+	server.Name = req.Name
+
+	if err := h.store.Servers().Update(server); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to update server",
+		})
+	}
+
+	return c.JSON(server)
+}
+
+func (h *ServersHandler) Delete(c *fiber.Ctx) error {
+	userID := c.Locals("userID").(string)
+	serverID := c.Params("id")
+
+	server, err := h.store.Servers().GetByID(serverID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "database error",
+		})
+	}
+	if server == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "server not found",
+		})
+	}
+
+	if server.OwnerID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "you are not the owner of this server",
+		})
+	}
+
+	if err := h.store.Servers().Delete(serverID); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to delete server",
+		})
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
+}

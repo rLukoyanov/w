@@ -73,6 +73,8 @@ func (s *Server) setupRoutes(jwtSecret string) {
 	protected.Post("/servers", serversHandler.Create)
 	protected.Get("/servers", serversHandler.GetAll)
 	protected.Get("/servers/:id", serversHandler.GetByID)
+	protected.Patch("/servers/:id", serversHandler.Update)
+	protected.Delete("/servers/:id", serversHandler.Delete)
 
 	// Channels
 	channelsHandler := handlers.NewChannelsHandler(s.store)
@@ -85,6 +87,8 @@ func (s *Server) setupRoutes(jwtSecret string) {
 	messagesHandler := handlers.NewMessagesHandler(s.store)
 	protected.Get("/channels/:id/messages", messagesHandler.GetByChannelID)
 	protected.Post("/channels/:id/messages", messagesHandler.Create)
+	protected.Patch("/messages/:id", messagesHandler.Update)
+	protected.Delete("/messages/:id", messagesHandler.Delete)
 
 	// WebSocket endpoint
 	s.app.Get("/ws", websocket.New(s.handleWebSocket, websocket.Config{
