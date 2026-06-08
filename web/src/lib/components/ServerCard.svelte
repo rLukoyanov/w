@@ -2,14 +2,43 @@
   import type { Server } from "$lib/api";
   import { ROUTES } from "$lib/routes";
 
-  let { server } = $props<{ server: Server }>();
+  interface Props {
+    server: Server;
+    active: boolean;
+  }
+
+  let { server, active }: Props = $props();
+
+  const avatarColors = [
+    "bg-primary",
+    "bg-secondary",
+    "bg-accent",
+    "bg-info",
+    "bg-success",
+    "bg-warning",
+    "bg-error",
+  ];
+
+  function getColor(name: string): string {
+    const index =
+      name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) %
+      avatarColors.length;
+    return avatarColors[index];
+  }
 </script>
 
 <a
   href={ROUTES.SERVER.DETAIL(server.id)}
-  class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group"
+  class="tooltip tooltip-right"
+  data-tip={server.name}
 >
-  <div class="w-14 h-14 flex items-center justify-center">
+  <div
+    class="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg transition-all duration-200 {getColor(
+      server.name,
+    )} text-base-100 {active
+      ? 'rounded-xl shadow-md scale-110'
+      : 'hover:rounded-xl hover:shadow-md'}"
+  >
     {server.name[0]}
   </div>
 </a>
