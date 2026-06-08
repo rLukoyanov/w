@@ -8,6 +8,7 @@
   import { onMount, setContext } from "svelte";
   import { page } from "$app/state";
   import CreateServerModal from "$lib/components/CreateServerModal.svelte";
+  import { wsClient } from "$lib/websocket";
 
   let { children } = $props();
 
@@ -37,13 +38,19 @@
 
   function onServerCreated(server: Server) {
     refreshServers();
-    goto(`/servers/${server.id}`);
+    goto(`/app/servers/${server.id}`);
   }
 
   onMount(async () => {
     try {
       const user = await userClient.getMe();
       auth.setUser(user);
+
+      const token = userClient.getToken();
+      if (token) {
+        wsClient.connect(token);
+      }
+
       await refreshServers();
       loading = false;
     } catch (e) {

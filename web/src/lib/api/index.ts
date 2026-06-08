@@ -4,3 +4,4 @@ export * from "./servers";
 export * from "./channels";
 export * from "./types";
 export * from "./messages";
+export * from "./users";

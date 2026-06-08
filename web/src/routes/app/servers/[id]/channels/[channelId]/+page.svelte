@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Channel, Message } from "$lib/api";
+  import type { Channel, Message } from "$lib/api/index";
   import { channelsClient, messagesClient } from "$lib/api/index";
   import { wsClient, wsConnected } from "$lib/websocket";
   import { onMount, onDestroy } from "svelte";
@@ -10,7 +10,6 @@
   let channel = $state<Channel | null>(null);
   let messages = $state<Message[]>([]);
   let loading = $state(true);
-  let messagesContainer = $state<HTMLDivElement | null>(null);
 
   onMount(async () => {
     try {
@@ -18,7 +17,9 @@
       const msgs = await messagesClient.get(params.channelId);
       messages = msgs;
       loading = false;
+
       wsClient.on("MESSAGE_CREATE", handleNewMessage);
+      wsClient.subscribe(params.channelId);
     } catch {
       messages = [];
       loading = false;
@@ -27,6 +28,7 @@
 
   onDestroy(() => {
     wsClient.off("MESSAGE_CREATE", handleNewMessage);
+    wsClient.unsubscribe();
   });
 
   function handleNewMessage(data: Message) {

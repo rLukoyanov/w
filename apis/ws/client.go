@@ -12,38 +12,21 @@ import (
 )
 
 const (
-	// Time allowed to write a message to the peer
-	writeWait = 10 * time.Second
-
-	// Time allowed to read the next pong message from the peer
-	pongWait = 60 * time.Second
-
-	// Send pings to peer with this period (must be less than pongWait)
-	pingPeriod = (pongWait * 9) / 10
-
-	// Maximum message size allowed from peer
+	writeWait      = 10 * time.Second
+	pongWait       = 60 * time.Second
+	pingPeriod     = (pongWait * 9) / 10
 	maxMessageSize = 512 * 1024 // 512 KB
 )
 
 // Client represents a single WebSocket connection
 type Client struct {
-	// User ID of the connected client
-	UserID string
-
-	// WebSocket connection
-	conn *websocket.Conn
-
-	// Buffered channel of outbound messages
-	send chan *Event
-
-	// Hub instance
-	hub *Hub
-
-	// Store for database access
-	store store.Store
-
-	// Logger
-	logger zerolog.Logger
+	UserID            string
+	conn              *websocket.Conn
+	send              chan *Event
+	hub               *Hub
+	store             store.Store
+	logger            zerolog.Logger
+	SubscribedChannel string // current channel the client is subscribed to
 }
 
 // NewClient creates a new Client instance
@@ -61,6 +44,7 @@ func NewClient(userID string, conn *websocket.Conn, hub *Hub) *Client {
 // ReadPump pumps messages from the WebSocket connection to the hub
 func (c *Client) ReadPump() {
 	defer func() {
+		c.hub.UnsubscribeAll(c.UserID)
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
@@ -106,7 +90,6 @@ func (c *Client) WritePump() {
 		case event, ok := <-c.send:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
-				// Hub closed the channel
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -132,6 +115,10 @@ func (c *Client) handleEvent(event *Event) error {
 		return c.handleMessageCreate(event.Data)
 	case TypingStart:
 		return c.handleTypingStart(event.Data)
+	case Subscribe:
+		return c.handleSubscribe(event.Data)
+	case Unsubscribe:
+		return c.handleUnsubscribe(event.Data)
 	default:
 		c.logger.Warn().Str("event_type", string(event.Type)).Msg("Unknown event type")
 		return nil
@@ -151,7 +138,6 @@ func (c *Client) handleMessageCreate(data json.RawMessage) error {
 
 	// TODO: Validate user has access to channel
 
-	// Create message in database
 	msg := &models.Message{
 		ID:        uuid.New().String(),
 		ChannelID: msgData.ChannelID,
@@ -164,13 +150,19 @@ func (c *Client) handleMessageCreate(data json.RawMessage) error {
 		return err
 	}
 
-	// Broadcast to all clients in channel
+	// Fetch username for broadcast
+	authorUsername := ""
+	if author, err := c.store.Users().GetByID(c.UserID); err == nil && author != nil {
+		authorUsername = author.Username
+	}
+
 	broadcastData := MessageCreateData{
-		ID:        msg.ID,
-		ChannelID: msg.ChannelID,
-		AuthorID:  msg.AuthorID,
-		Content:   msg.Content,
-		CreatedAt: msg.CreatedAt,
+		ID:             msg.ID,
+		ChannelID:      msg.ChannelID,
+		AuthorID:       msg.AuthorID,
+		AuthorUsername: authorUsername,
+		Content:        msg.Content,
+		CreatedAt:      msg.CreatedAt,
 	}
 
 	dataBytes, err := json.Marshal(broadcastData)
@@ -193,11 +185,32 @@ func (c *Client) handleTypingStart(data json.RawMessage) error {
 		return err
 	}
 
-	// Just broadcast typing indicator, don't persist
 	c.hub.BroadcastToChannel(typingData.ChannelID, &Event{
 		Type: TypingStart,
 		Data: data,
 	})
 
+	return nil
+}
+
+// handleSubscribe handles SUBSCRIBE events
+func (c *Client) handleSubscribe(data json.RawMessage) error {
+	var subData SubscribeData
+	if err := json.Unmarshal(data, &subData); err != nil {
+		return err
+	}
+
+	c.hub.Subscribe(c.UserID, subData.ChannelID)
+	return nil
+}
+
+// handleUnsubscribe handles UNSUBSCRIBE events
+func (c *Client) handleUnsubscribe(data json.RawMessage) error {
+	var unsubData UnsubscribeData
+	if err := json.Unmarshal(data, &unsubData); err != nil {
+		return err
+	}
+
+	c.hub.Unsubscribe(c.UserID, unsubData.ChannelID)
 	return nil
 }

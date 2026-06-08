@@ -1,103 +1,105 @@
-import { writable, type Writable } from 'svelte/store';
-import { userClient } from './api/user';
+import { writable, type Writable } from "svelte/store";
+import { userClient } from "./api/user";
 
-export type EventType = 
-  | 'MESSAGE_CREATE' 
-  | 'MESSAGE_UPDATE' 
-  | 'MESSAGE_DELETE'
-  | 'TYPING_START'
-  | 'TYPING_STOP'
-  | 'PRESENCE_UPDATE';
+export type EventType =
+  | "MESSAGE_CREATE"
+  | "MESSAGE_UPDATE"
+  | "MESSAGE_DELETE"
+  | "TYPING_START"
+  | "TYPING_STOP"
+  | "PRESENCE_UPDATE"
+  | "SUBSCRIBE"
+  | "UNSUBSCRIBE";
 
 export interface WSEvent {
   type: EventType;
   data: any;
 }
 
-export interface Message {
+export interface MessagePayload {
   id: string;
   channel_id: string;
   author_id: string;
+  author_username?: string;
   content: string;
   created_at: string;
 }
+
+const WS_HOST =
+  typeof window !== "undefined"
+    ? import.meta.env.VITE_WS_HOST ?? `${window.location.hostname}:8090`
+    : "localhost:8090";
 
 class WebSocketClient {
   private ws: WebSocket | null = null;
   private reconnectInterval = 3000;
   private reconnectTimer: number | null = null;
-  
+  private currentToken: string | null = null;
+  private subscribedChannelId: string | null = null;
+
   public connected: Writable<boolean> = writable(false);
-  public messages: Writable<Message[]> = writable([]);
-  
+  public messages: Writable<MessagePayload[]> = writable([]);
+
   private eventHandlers: Map<EventType, Set<(data: any) => void>> = new Map();
 
   connect(token: string) {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      return;
-    }
+    if (this.ws?.readyState === WebSocket.OPEN) return;
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
-    const wsUrl = `${protocol}//${host}/ws?token=${token}`;
-
-    console.log('🔌 Connecting to WebSocket:', wsUrl);
+    this.currentToken = token;
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${WS_HOST}/ws?token=${token}`;
 
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
-      console.log('✅ WebSocket connected');
       this.connected.set(true);
-      
+
       if (this.reconnectTimer) {
         clearTimeout(this.reconnectTimer);
         this.reconnectTimer = null;
+      }
+
+      // Re-subscribe to previous channel if any
+      if (this.subscribedChannelId) {
+        this.sendRaw({ type: "SUBSCRIBE", data: { channel_id: this.subscribedChannelId } });
       }
     };
 
     this.ws.onmessage = (event) => {
       try {
         const wsEvent: WSEvent = JSON.parse(event.data);
-        console.log('📨 WebSocket event:', wsEvent);
-        
         this.handleEvent(wsEvent);
       } catch (err) {
-        console.error('Failed to parse WebSocket message:', err);
+        console.error("Failed to parse WebSocket message:", err);
       }
     };
 
-    this.ws.onerror = (error) => {
-      console.error('❌ WebSocket error:', error);
-    };
+    this.ws.onerror = () => {};
 
     this.ws.onclose = () => {
-      console.log('🔌 WebSocket closed');
       this.connected.set(false);
-      this.scheduleReconnect(token);
+      this.scheduleReconnect();
     };
   }
 
-  private scheduleReconnect(token: string) {
-    if (this.reconnectTimer) return;
-    
-    console.log(`🔄 Reconnecting in ${this.reconnectInterval}ms...`);
+  private scheduleReconnect() {
+    if (this.reconnectTimer || !this.currentToken) return;
+
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
-      this.connect(token);
+      this.connect(this.currentToken!);
     }, this.reconnectInterval) as unknown as number;
   }
 
   private handleEvent(event: WSEvent) {
-    // Trigger registered handlers
     const handlers = this.eventHandlers.get(event.type);
     if (handlers) {
-      handlers.forEach(handler => handler(event.data));
+      handlers.forEach((handler) => handler(event.data));
     }
 
-    // Default handling
     switch (event.type) {
-      case 'MESSAGE_CREATE':
-        this.messages.update(msgs => [...msgs, event.data as Message]);
+      case "MESSAGE_CREATE":
+        this.messages.update((msgs) => [...msgs, event.data as MessagePayload]);
         break;
     }
   }
@@ -116,45 +118,64 @@ class WebSocketClient {
     }
   }
 
-  send(event: WSEvent) {
+  private sendRaw(event: WSEvent) {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(event));
-    } else {
-      console.error('WebSocket is not connected');
     }
   }
 
   sendMessage(channelId: string, content: string) {
-    this.send({
-      type: 'MESSAGE_CREATE',
-      data: { channel_id: channelId, content }
+    this.sendRaw({
+      type: "MESSAGE_CREATE",
+      data: { channel_id: channelId, content },
     });
   }
 
   sendTyping(channelId: string) {
-    this.send({
-      type: 'TYPING_START',
-      data: { channel_id: channelId, user_id: '' } // user_id will be set by server
+    this.sendRaw({
+      type: "TYPING_START",
+      data: { channel_id: channelId },
     });
   }
 
+  subscribe(channelId: string) {
+    if (this.subscribedChannelId === channelId) return;
+
+    // Unsubscribe from previous channel
+    if (this.subscribedChannelId) {
+      this.sendRaw({ type: "UNSUBSCRIBE", data: { channel_id: this.subscribedChannelId } });
+    }
+
+    this.subscribedChannelId = channelId;
+    this.sendRaw({ type: "SUBSCRIBE", data: { channel_id: channelId } });
+  }
+
+  unsubscribe() {
+    if (this.subscribedChannelId) {
+      this.sendRaw({ type: "UNSUBSCRIBE", data: { channel_id: this.subscribedChannelId } });
+      this.subscribedChannelId = null;
+    }
+  }
+
   disconnect() {
+    this.subscribedChannelId = null;
+    this.currentToken = null;
+
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
-    
+
     if (this.ws) {
       this.ws.close();
       this.ws = null;
     }
-    
+
     this.connected.set(false);
   }
 }
 
 export const wsClient = new WebSocketClient();
 
-// Export stores for reactive subscriptions in components
 export const wsConnected = wsClient.connected;
 export const wsMessages = wsClient.messages;

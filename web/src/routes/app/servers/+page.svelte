@@ -29,7 +29,7 @@
       showCreateServer = false;
       isCreating = false;
 
-      goto(`/servers/${server.id}`);
+      goto(`/app/servers/${server.id}`);
     } catch (err: any) {
       notify.error(err.message ?? "Failed to create server");
       isCreating = false;

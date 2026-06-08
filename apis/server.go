@@ -90,6 +90,10 @@ func (s *Server) setupRoutes(jwtSecret string) {
 	protected.Patch("/messages/:id", messagesHandler.Update)
 	protected.Delete("/messages/:id", messagesHandler.Delete)
 
+	// Users / Presence
+	usersHandler := handlers.NewUsersHandler(s.store, s.hub)
+	protected.Get("/users/connected", usersHandler.ListConnected)
+
 	// WebSocket endpoint
 	s.app.Get("/ws", websocket.New(s.handleWebSocket, websocket.Config{
 		// Allow connections from any origin for development

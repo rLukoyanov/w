@@ -11,7 +11,7 @@
     try {
       const user = await userClient.getMe();
       auth.setUser(user);
-      goto("/servers");
+      goto("/app/servers");
     } catch (e) {
       // Not logged in, that's fine
     }

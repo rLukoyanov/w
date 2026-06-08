@@ -1,14 +1,19 @@
 export const ROUTES = {
   HOME: "/",
+  APP: {
+    INDEX: "/app",
+    SERVERS: "/app/servers",
+    SETTINGS: "/app/settings",
+  },
   AUTH: {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
   },
   SERVER: {
-    INDEX: "/servers",
-    DETAIL: (id: string) => `/servers/${id}`,
+    INDEX: "/app/servers",
+    DETAIL: (id: string) => `/app/servers/${id}`,
     CHANNEL: (serverId: string, channelId: string) =>
-      `/servers/${serverId}/channels/${channelId}`,
+      `/app/servers/${serverId}/channels/${channelId}`,
   },
-  SETTINGS: "/settings",
+  SETTINGS: "/app/settings",
 } as const;
