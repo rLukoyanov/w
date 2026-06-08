@@ -1,12 +1,6 @@
 <script lang="ts">
-  import {
-    type Server,
-    type ServerWithChannels,
-    type Channel,
-    channelsClient,
-    serversClient,
-  } from "$lib/api/index";
   import { untrack } from "svelte";
+  import { serversClient, channelsClient, type Server, type Channel, type ServerWithChannels } from "$lib/api";
   import { ROUTES } from "$lib/routes";
   import { page } from "$app/state";
   import ChannelItem from "$lib/components/ChannelItem.svelte";
@@ -27,13 +21,11 @@
   let isLoading = $state(true);
   let activeChannelId = $derived(page.params.channelId as string | undefined);
 
-  // Channel creation state
   let isCreating = $state(false);
   let newChannelName = $state("");
   let channelType = $state<"text" | "voice">("text");
-  const isFormValid = $derived(newChannelName.trim().length > 0);
+  let isFormValid = $derived(newChannelName.trim().length > 0);
 
-  // Load server data
   $effect(() => {
     const serverId = params.id;
     const controller = new AbortController();
@@ -41,22 +33,17 @@
 
     untrack(async () => {
       try {
-        const response = await serversClient.get(serverId);
-        const data = response as ServerWithChannels;
-
+        const data = await serversClient.get(serverId, controller.signal) as ServerWithChannels;
         if (!controller.signal.aborted) {
-          server = {
-            id: data.id,
-            name: data.name,
-            owner_id: data.owner_id,
-            created_at: data.created_at,
-          };
+          server = { id: data.id, name: data.name, owner_id: data.owner_id, created_at: data.created_at };
           channels = data.channels || [];
-          isLoading = false;
         }
       } catch (err) {
         if (!controller.signal.aborted) {
           notify.error(err instanceof Error ? err.message : "Failed to load server");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
           isLoading = false;
         }
       }
@@ -65,13 +52,13 @@
     return () => controller.abort();
   });
 
-  function resetCreateForm(): void {
+  function resetForm() {
     isCreating = false;
     newChannelName = "";
     channelType = "text";
   }
 
-  async function handleCreateChannel(): Promise<void> {
+  async function handleCreateChannel() {
     if (!isFormValid) {
       notify.error("Channel name is required");
       return;
@@ -80,19 +67,19 @@
     try {
       const channel = await channelsClient.create(params.id, newChannelName, channelType);
       channels = [...channels, channel];
-      resetCreateForm();
+      resetForm();
       goto(ROUTES.SERVER.CHANNEL(params.id, channel.id));
     } catch (err) {
       notify.error(err instanceof Error ? err.message : "Failed to create channel");
     }
   }
 
-  async function handleDeleteChannel(channelId: string, event: MouseEvent): Promise<void> {
+  async function handleDeleteChannel(channelId: string, event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
 
-    const deletedChannel = channels.find((ch) => ch.id === channelId);
-    if (!deletedChannel) return;
+    const deleted = channels.find((ch) => ch.id === channelId);
+    if (!deleted) return;
 
     channels = channels.filter((ch) => ch.id !== channelId);
 
@@ -105,18 +92,16 @@
       await channelsClient.delete(channelId);
     } catch (err) {
       console.error("Failed to delete channel:", err);
-      channels = [...channels, deletedChannel].sort(
+      channels = [...channels, deleted].sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       );
     }
   }
 
-  function handleKeyDown(event: KeyboardEvent): void {
-    if (event.key === "Enter") {
-      handleCreateChannel();
-    } else if (event.key === "Escape") {
-      resetCreateForm();
-    } else if (event.key === "Tab") {
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === "Enter") handleCreateChannel();
+    else if (event.key === "Escape") resetForm();
+    else if (event.key === "Tab") {
       event.preventDefault();
       channelType = channelType === "text" ? "voice" : "text";
     }
@@ -175,7 +160,7 @@
           onNameChange={(name) => (newChannelName = name)}
           onTypeChange={(type) => (channelType = type)}
           onKeyDown={handleKeyDown}
-          onBlur={resetCreateForm}
+          onBlur={resetForm}
         />
       </div>
     </div>

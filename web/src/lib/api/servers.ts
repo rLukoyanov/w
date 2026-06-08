@@ -15,8 +15,8 @@ class ServersClient {
     return res.json();
   }
 
-  async get(id: string): Promise<Server> {
-    const res = await baseClient["request"](`/servers/${id}`);
+  async get(id: string, signal?: AbortSignal): Promise<Server> {
+    const res = await baseClient["request"](`/servers/${id}`, signal ? { signal } : {});
     return res.json();
   }
 }
