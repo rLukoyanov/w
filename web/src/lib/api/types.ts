@@ -41,9 +41,14 @@ export interface Channel {
 }
 
 export interface Message {
-	id: string;
-	channel_id: string;
-	author_id: string;
-	content: string;
-	created_at: string;
+  id: string;
+  channel_id: string;
+  author_id: string;
+  author: {
+    id: string;
+    username: string;
+    email: string;
+  };
+  content: string;
+  created_at: string;
 }

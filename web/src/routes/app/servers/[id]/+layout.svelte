@@ -6,6 +6,7 @@
   import ChannelItem from "$lib/components/ChannelItem.svelte";
   import CreateChannelForm from "$lib/components/CreateChannelForm.svelte";
   import { notify } from "$lib/stores/notifications";
+  import { auth } from "$lib/stores/auth";
   import { goto } from "$app/navigation";
   import { Settings } from "lucide-svelte";
 
@@ -123,13 +124,15 @@
               {channels.length} channel{channels.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <a
-            href={ROUTES.SERVER.SETTINGS(params.id)}
-            class="btn btn-ghost btn-xs btn-square shrink-0 transition-all duration-200 hover:rotate-90 hover:scale-110 hover:bg-base-300 hover:text-primary"
-            aria-label="Server settings"
-          >
-            <Settings class="w-3.5 h-3.5 transition-all duration-200" />
-          </a>
+          {#if server?.owner_id === $auth.user?.id}
+            <a
+              href={ROUTES.SERVER.SETTINGS(params.id)}
+              class="btn btn-ghost btn-xs btn-square shrink-0 transition-all duration-200 hover:rotate-90 hover:scale-110 hover:bg-base-300 hover:text-primary"
+              aria-label="Server settings"
+            >
+              <Settings class="w-3.5 h-3.5 transition-all duration-200" />
+            </a>
+          {/if}
         </div>
       </header>
 

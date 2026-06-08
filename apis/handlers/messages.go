@@ -20,10 +20,34 @@ func NewMessagesHandler(store store.Store) *MessagesHandler {
 	return &MessagesHandler{store: store}
 }
 
+func (h *MessagesHandler) messageToItem(msg *models.Message) (response.MessageItem, error) {
+	item := response.MessageItem{
+		ID:        msg.ID,
+		ChannelID: msg.ChannelID,
+		AuthorID:  msg.AuthorID,
+		Content:   msg.Content,
+		CreatedAt: msg.CreatedAt,
+	}
+
+	author, err := h.store.Users().GetByID(msg.AuthorID)
+	if err != nil || author == nil {
+		item.Author = response.AuthorInfo{
+			ID: msg.AuthorID,
+		}
+	} else {
+		item.Author = response.AuthorInfo{
+			ID:       author.ID,
+			Username: author.Username,
+			Email:    author.Email,
+		}
+	}
+
+	return item, nil
+}
+
 func (h *MessagesHandler) GetByChannelID(c *fiber.Ctx) error {
 	channelID := c.Params("id")
 
-	// Get limit from query params (default 50)
 	limit := 50
 	if limitParam := c.Query("limit"); limitParam != "" {
 		if parsedLimit, err := strconv.Atoi(limitParam); err == nil && parsedLimit > 0 {
@@ -31,7 +55,6 @@ func (h *MessagesHandler) GetByChannelID(c *fiber.Ctx) error {
 		}
 	}
 
-	// Verify channel exists
 	channel, err := h.store.Channels().GetByID(channelID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -44,15 +67,40 @@ func (h *MessagesHandler) GetByChannelID(c *fiber.Ctx) error {
 		})
 	}
 
-	messages, err := h.store.Messages().GetByChannelID(channelID, limit)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "failed to get messages",
-		})
+	var messages []*models.Message
+	if beforeParam := c.Query("before"); beforeParam != "" {
+		before, err := time.Parse(time.RFC3339, beforeParam)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid before timestamp, use RFC3339 format",
+			})
+		}
+		messages, err = h.store.Messages().GetByChannelIDBefore(channelID, before, limit)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to get messages",
+			})
+		}
+	} else {
+		messages, err = h.store.Messages().GetByChannelID(channelID, limit)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to get messages",
+			})
+		}
+	}
+
+	items := make([]response.MessageItem, 0, len(messages))
+	for _, msg := range messages {
+		item, err := h.messageToItem(msg)
+		if err != nil {
+			continue
+		}
+		items = append(items, item)
 	}
 
 	return c.JSON(response.Message{
-		Messages: messages,
+		Messages: items,
 	})
 }
 
@@ -67,7 +115,6 @@ func (h *MessagesHandler) Create(c *fiber.Ctx) error {
 		})
 	}
 
-	// Verify channel exists
 	channel, err := h.store.Channels().GetByID(channelID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -80,7 +127,7 @@ func (h *MessagesHandler) Create(c *fiber.Ctx) error {
 		})
 	}
 
-	message := &models.Message{
+	msg := &models.Message{
 		ID:        uuid.New().String(),
 		ChannelID: channelID,
 		AuthorID:  userID,
@@ -88,13 +135,20 @@ func (h *MessagesHandler) Create(c *fiber.Ctx) error {
 		CreatedAt: time.Now(),
 	}
 
-	if err := h.store.Messages().Create(message); err != nil {
+	if err := h.store.Messages().Create(msg); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "failed to create message",
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(message)
+	item, err := h.messageToItem(msg)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to build response",
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(item)
 }
 
 func (h *MessagesHandler) Update(c *fiber.Ctx) error {
@@ -134,7 +188,14 @@ func (h *MessagesHandler) Update(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(msg)
+	item, err := h.messageToItem(msg)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to build response",
+		})
+	}
+
+	return c.JSON(item)
 }
 
 func (h *MessagesHandler) Delete(c *fiber.Ctx) error {

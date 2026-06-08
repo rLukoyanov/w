@@ -21,6 +21,11 @@ export interface MessagePayload {
   channel_id: string;
   author_id: string;
   author_username?: string;
+  author?: {
+    id: string;
+    username: string;
+    email: string;
+  };
   content: string;
   created_at: string;
 }

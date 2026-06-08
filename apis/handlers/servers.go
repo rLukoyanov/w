@@ -148,19 +148,48 @@ func (h *ServersHandler) GetByID(c *fiber.Ctx) error {
 func (h *ServersHandler) GetAll(c *fiber.Ctx) error {
 	userID := c.Locals("userID").(string)
 
-	servers, err := h.store.Servers().GetByOwnerID(userID)
+	// Get owned servers
+	owned, err := h.store.Servers().GetByOwnerID(userID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "failed to get servers",
 		})
 	}
 
-	// Return empty array instead of null if no servers
-	if servers == nil {
-		servers = []*models.Server{}
+	// Get member server IDs
+	memberIDs, err := h.store.ServerMembers().GetServerIDsByUser(userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to get server memberships",
+		})
 	}
 
-	return c.JSON(servers)
+	// Deduplicate by ID
+	seen := make(map[string]bool, len(owned)+len(memberIDs))
+	result := make([]*models.Server, 0, len(owned)+len(memberIDs))
+
+	for _, s := range owned {
+		seen[s.ID] = true
+		result = append(result, s)
+	}
+
+	for _, id := range memberIDs {
+		if seen[id] {
+			continue
+		}
+		server, err := h.store.Servers().GetByID(id)
+		if err != nil || server == nil {
+			continue
+		}
+		seen[id] = true
+		result = append(result, server)
+	}
+
+	if result == nil {
+		result = []*models.Server{}
+	}
+
+	return c.JSON(result)
 }
 
 func (h *ServersHandler) Update(c *fiber.Ctx) error {

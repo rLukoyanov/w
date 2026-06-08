@@ -1,6 +1,10 @@
 package repository
 
-import "github.com/rLukoyanov/w/core/models"
+import (
+	"time"
+
+	"github.com/rLukoyanov/w/core/models"
+)
 
 type UsersRepository interface {
 	Create(user *models.User) error
@@ -31,6 +35,7 @@ type MessagesRepository interface {
 	Create(message *models.Message) error
 	GetByID(id string) (*models.Message, error)
 	GetByChannelID(channelID string, limit int) ([]*models.Message, error)
+	GetByChannelIDBefore(channelID string, before time.Time, limit int) ([]*models.Message, error)
 	Update(message *models.Message) error
 	Delete(id string) error
 }

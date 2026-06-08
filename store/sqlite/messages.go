@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/rLukoyanov/w/core/models"
 )
@@ -61,6 +62,48 @@ func (r *MessagesRepository) GetByChannelID(channelID string, limit int) ([]*mod
 	rows, err := r.db.Query(query, channelID, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get messages by channel id: %w", err)
+	}
+	defer rows.Close()
+
+	var messages []*models.Message
+	for rows.Next() {
+		message := &models.Message{}
+		err := rows.Scan(
+			&message.ID,
+			&message.ChannelID,
+			&message.AuthorID,
+			&message.Content,
+			&message.CreatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan message: %w", err)
+		}
+		messages = append(messages, message)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+
+	return messages, nil
+}
+
+func (r *MessagesRepository) GetByChannelIDBefore(channelID string, before time.Time, limit int) ([]*models.Message, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+
+	query := `
+		SELECT id, channel_id, author_id, content, created_at 
+		FROM messages 
+		WHERE channel_id = ? AND created_at < ?
+		ORDER BY created_at DESC 
+		LIMIT ?
+	`
+
+	rows, err := r.db.Query(query, channelID, before, limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get messages before: %w", err)
 	}
 	defer rows.Close()
 

@@ -10,12 +10,15 @@
   let channel = $state<Channel | null>(null);
   let messages = $state<Message[]>([]);
   let loading = $state(true);
+  let loadingMore = $state(false);
+  let hasMore = $state(true);
 
   onMount(async () => {
     try {
       channel = await channelsClient.get(params.channelId);
       const msgs = await messagesClient.get(params.channelId);
-      messages = msgs;
+      messages = msgs.reverse();
+      hasMore = msgs.length >= 50;
       loading = false;
 
       wsClient.on("MESSAGE_CREATE", handleNewMessage);
@@ -31,9 +34,35 @@
     wsClient.unsubscribe();
   });
 
-  function handleNewMessage(data: Message) {
+  async function handleLoadMore() {
+    if (loadingMore || messages.length === 0) return;
+    loadingMore = true;
+
+    try {
+      const oldest = messages[0];
+      const msgs = await messagesClient.get(params.channelId, 50, oldest.created_at);
+      if (msgs.length < 50) hasMore = false;
+      messages = [...msgs.reverse(), ...messages];
+    } catch {
+      // ignore
+    } finally {
+      loadingMore = false;
+    }
+  }
+
+  function handleNewMessage(data: any) {
     if (data.channel_id === params.channelId) {
-      messages = [...messages, data];
+      const msg: Message = data.author
+        ? data
+        : {
+            ...data,
+            author: {
+              id: data.author_id,
+              username: data.author_username ?? data.author_id.slice(0, 8),
+              email: "",
+            },
+          };
+      messages = [...messages, msg];
     }
   }
 
@@ -50,6 +79,9 @@
 <ChannelView
   {channel}
   {messages}
+  {loadingMore}
+  {hasMore}
   messagesLoading={loading}
   onSend={handleSendMessage}
+  onLoadMore={handleLoadMore}
 />
