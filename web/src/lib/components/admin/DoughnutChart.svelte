@@ -4,7 +4,7 @@
     size?: number;
   } = $props();
 
-  const bgColor = "oklch(0.15 0.008 285)";
+  const bgColor = "#334155";
   let total = $derived(data.reduce((s, d) => s + d.value, 0) || 1);
   let cx = $derived(size / 2);
   let cy = $derived(size / 2);
@@ -39,17 +39,17 @@
       {/if}
     {/each}
     <text x={cx} y={cy - 3} text-anchor="middle"
-      font-size="22" font-weight="700" fill="oklch(0.88 0.005 285)" font-family="var(--font-family-display), sans-serif">{total}</text>
+      font-size="22" font-weight="700" fill="#f1f5f9">{total}</text>
     <text x={cx} y={cy + 13} text-anchor="middle"
-      font-size="10" fill="oklch(0.45 0.01 285)" font-family="var(--font-family-body), sans-serif">total</text>
+      font-size="10" fill="#94a3b8">total</text>
   </svg>
 
   <div class="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
     {#each segments as seg}
-      <div class="flex items-center gap-1.5 text-xs font-[family-name:var(--font-family-body)]">
+      <div class="flex items-center gap-1.5 text-xs">
         <div class="w-2 h-2 rounded-full" style="background: {seg.color}; box-shadow: 0 0 4px {seg.color}66;"></div>
-        <span style="color: oklch(0.55 0.01 285);">{seg.label}</span>
-        <span class="font-semibold tabular-nums" style="color: oklch(0.78 0.01 285);">{(seg.pct * 100).toFixed(0)}%</span>
+        <span style="color: #94a3b8;">{seg.label}</span>
+        <span class="font-semibold tabular-nums" style="color: #e2e8f0;">{(seg.pct * 100).toFixed(0)}%</span>
       </div>
     {/each}
   </div>

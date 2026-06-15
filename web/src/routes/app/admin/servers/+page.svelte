@@ -3,8 +3,6 @@
   import { baseClient, BASE_URL } from "$lib/api/client";
   import { Trash2, Server } from "lucide-svelte";
 
-  const brand = "oklch(0.58 0.2 285)";
-
   let servers = $state<any[]>([]);
   let loading = $state(true);
   let error = $state<string | null>(null);
@@ -50,45 +48,45 @@
 
 <div class="p-6 max-w-6xl mx-auto">
   <div class="flex items-center gap-3 mb-6">
-    <a href="/app/admin" class="text-sm hover:underline" style="color: oklch(0.5 0.01 285);">&larr; Dashboard</a>
-    <h1 class="text-xl font-bold font-[family-name:var(--font-family-display)]" style="color: oklch(0.9 0.01 285);">Servers</h1>
+    <a href="/app/admin" class="text-sm hover:underline" style="color: #94a3b8;">&larr; Dashboard</a>
+    <h1 class="text-xl font-bold" style="color: #f1f5f9;">Servers</h1>
   </div>
 
   {#if loading}
     <div class="flex justify-center py-16">
-      <span class="loading loading-spinner loading-lg" style="color: {brand};"></span>
+      <span class="loading loading-spinner loading-lg" style="color: #818cf8;"></span>
     </div>
   {:else if error}
-    <div class="text-sm p-4 rounded-xl" style="background: oklch(0.2 0.02 25 / 0.3); color: oklch(0.7 0.18 25); border: 1px solid oklch(0.25 0.04 25 / 0.3);">
+    <div class="text-sm p-4 rounded-xl" style="background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d;">
       {error}
     </div>
   {:else}
-    <div class="overflow-x-auto rounded-xl border" style="border-color: oklch(0.15 0.008 285);">
+    <div class="overflow-x-auto rounded-xl border" style="border-color: #334155;">
       <table class="w-full">
         <thead>
-          <tr style="border-bottom: 1px solid oklch(0.15 0.008 285);">
-            <th class="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider" style="color: oklch(0.5 0.01 285);">Server</th>
-            <th class="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider" style="color: oklch(0.5 0.01 285);">Owner</th>
-            <th class="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: oklch(0.5 0.01 285);">Channels</th>
-            <th class="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider hidden md:table-cell" style="color: oklch(0.5 0.01 285);">Created</th>
-            <th class="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider" style="color: oklch(0.5 0.01 285);">Actions</th>
+          <tr style="border-bottom: 1px solid #334155;">
+            <th class="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style="color: #64748b;">Server</th>
+            <th class="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style="color: #64748b;">Owner</th>
+            <th class="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider hidden sm:table-cell" style="color: #64748b;">Channels</th>
+            <th class="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider hidden md:table-cell" style="color: #64748b;">Created</th>
+            <th class="text-right px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style="color: #64748b;">Actions</th>
           </tr>
         </thead>
         <tbody>
           {#each servers as server}
-            <tr class="table-row" style="border-bottom: 1px solid oklch(0.12 0.006 285);">
+            <tr class="table-row" style="border-bottom: 1px solid #1e293b;">
               <td class="px-4 py-3">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                    style="background: {brand}15; color: {brand};">
+                    style="background: #818cf822; color: #818cf8;">
                     <Server class="w-4 h-4" />
                   </div>
-                  <span class="text-sm font-medium" style="color: oklch(0.85 0.01 285);">{server.name}</span>
+                  <span class="text-sm font-medium" style="color: #e2e8f0;">{server.name}</span>
                 </div>
               </td>
-              <td class="px-4 py-3 text-sm" style="color: oklch(0.55 0.01 285);">{server.owner_name || server.owner_id.slice(0, 8)}</td>
-              <td class="px-4 py-3 text-sm hidden sm:table-cell" style="color: oklch(0.45 0.01 285);">{server.channels}</td>
-              <td class="px-4 py-3 text-sm hidden md:table-cell" style="color: oklch(0.45 0.01 285);">{new Date(server.created_at).toLocaleDateString()}</td>
+              <td class="px-4 py-3 text-sm" style="color: #94a3b8;">{server.owner_name || server.owner_id.slice(0, 8)}</td>
+              <td class="px-4 py-3 text-sm hidden sm:table-cell" style="color: #64748b;">{server.channels}</td>
+              <td class="px-4 py-3 text-sm hidden md:table-cell" style="color: #64748b;">{new Date(server.created_at).toLocaleDateString()}</td>
               <td class="px-4 py-3 text-right">
                 <button class="action-btn action-btn-danger"
                   title="Delete server"
@@ -106,23 +104,23 @@
 
 <style>
   :global(.table-row:hover) {
-    background: oklch(0.12 0.006 285);
+    background: #1e293b;
   }
   :global(.action-btn) {
     background: transparent;
     border: none;
     border-radius: 6px;
     padding: 4px 6px;
-    color: oklch(0.5 0.01 285);
+    color: #64748b;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
   }
   :global(.action-btn:hover) {
-    background: oklch(0.18 0.01 285);
-    color: oklch(0.7 0.01 285);
+    background: #334155;
+    color: #cbd5e1;
   }
   :global(.action-btn-danger:hover) {
-    background: oklch(0.2 0.04 25 / 0.3);
-    color: oklch(0.65 0.18 25);
+    background: #450a0a;
+    color: #fca5a5;
   }
 </style>

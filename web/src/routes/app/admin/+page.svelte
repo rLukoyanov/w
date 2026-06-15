@@ -5,10 +5,6 @@
   import BarChart from "$lib/components/admin/BarChart.svelte";
   import DoughnutChart from "$lib/components/admin/DoughnutChart.svelte";
 
-  const brand = "oklch(0.58 0.2 285)";
-  const green = "oklch(0.55 0.18 145)";
-  const amber = "oklch(0.6 0.18 85)";
-
   let stats = $state<{
     total_users: number;
     total_servers: number;
@@ -25,15 +21,15 @@
     return Object.entries(stats.users_by_role || {}).map(([role, count], i) => ({
       label: role,
       value: count as number,
-      color: i === 0 ? brand : "oklch(0.55 0.15 25)",
+      color: i === 0 ? "#818cf8" : "#f87171",
     }));
   });
 
   let serverData = $derived.by(() => {
     if (!stats) return [];
     return [
-      { label: "Servers", value: stats.total_servers, color: brand },
-      { label: "Channels", value: stats.total_channels, color: amber },
+      { label: "Servers", value: stats.total_servers, color: "#818cf8" },
+      { label: "Channels", value: stats.total_channels, color: "#fbbf24" },
     ];
   });
 
@@ -60,86 +56,85 @@
 <div class="p-6 max-w-6xl mx-auto">
   <div class="flex items-center justify-between mb-8">
     <div>
-      <h1 class="text-2xl font-bold font-[family-name:var(--font-family-display)]" style="color: oklch(0.92 0.004 285);">Admin</h1>
-      <p class="text-sm mt-0.5" style="color: oklch(0.5 0.01 285);">System overview and management</p>
+      <h1 class="text-2xl font-bold" style="color: #f1f5f9;">Admin</h1>
+      <p class="text-sm mt-0.5" style="color: #94a3b8;">System overview and management</p>
     </div>
     {#if stats}
-      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
-        style="background: {stats.online_users > 0 ? green + '18' : 'oklch(0.15 0.008 285)'}; color: {stats.online_users > 0 ? green : 'oklch(0.5 0.01 285)'};">
-        <span class="w-1.5 h-1.5 rounded-full"
-          style="background: {stats.online_users > 0 ? green : 'oklch(0.4 0.01 285)'}; box-shadow: 0 0 6px {stats.online_users > 0 ? green : 'transparent'};"></span>
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium"
+        style="background: #{'22c55e'}18; color: #22c55e;">
+        <span class="w-1.5 h-1.5 rounded-full" style="background: #22c55e;"></span>
         {stats.online_users} online
       </div>
     {/if}
   </div>
 
   {#if error}
-    <div class="text-sm p-4 rounded-xl" style="background: oklch(0.2 0.02 25 / 0.3); color: oklch(0.7 0.18 25); border: 1px solid oklch(0.25 0.04 25 / 0.3);">
+    <div class="text-sm p-4 rounded-xl" style="background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d;">
       Failed to load stats: {error}
     </div>
   {:else if !stats}
     <div class="flex justify-center py-16">
-      <span class="loading loading-spinner loading-lg" style="color: {brand};"></span>
+      <span class="loading loading-spinner loading-lg" style="color: #818cf8;"></span>
     </div>
   {:else}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
       <div class="stat-card">
-        <div class="stat-icon" style="background: {green}15; color: {green};">
+        <div class="stat-icon" style="background: #22c55e22; color: #22c55e;">
           <Activity class="w-4 h-4" />
         </div>
         <div class="stat-label">Online</div>
-        <div class="stat-value" style="color: {green};">{stats.online_users}</div>
-        <div class="stat-trend">
-          <div class="trend-bar" style="width: {onlineFraction}%; background: {green};"></div>
+        <div class="stat-value" style="color: #22c55e;">{stats.online_users}</div>
+        <div class="stat-bar">
+          <div class="stat-bar-fill" style="width: {onlineFraction}%; background: #22c55e;"></div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: {brand}15; color: {brand};">
+        <div class="stat-icon" style="background: #818cf822; color: #818cf8;">
           <Users class="w-4 h-4" />
         </div>
         <div class="stat-label">Users</div>
-        <div class="stat-value" style="color: oklch(0.85 0.01 285);">{stats.total_users}</div>
+        <div class="stat-value" style="color: #f1f5f9;">{stats.total_users}</div>
         <div class="stat-sub">{stats.admins} admin{stats.admins !== 1 ? "s" : ""}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: {amber}15; color: {amber};">
+        <div class="stat-icon" style="background: #fbbf2422; color: #fbbf24;">
           <Server class="w-4 h-4" />
         </div>
         <div class="stat-label">Servers</div>
-        <div class="stat-value" style="color: oklch(0.85 0.01 285);">{stats.total_servers}</div>
+        <div class="stat-value" style="color: #f1f5f9;">{stats.total_servers}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: {brand}15; color: {brand};">
+        <div class="stat-icon" style="background: #818cf822; color: #818cf8;">
           <Hash class="w-4 h-4" />
         </div>
         <div class="stat-label">Channels</div>
-        <div class="stat-value" style="color: oklch(0.85 0.01 285);">{stats.total_channels}</div>
+        <div class="stat-value" style="color: #f1f5f9;">{stats.total_channels}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: {amber}15; color: {amber};">
+        <div class="stat-icon" style="background: #fbbf2422; color: #fbbf24;">
           <MessageSquare class="w-4 h-4" />
         </div>
         <div class="stat-label">Messages</div>
-        <div class="stat-value" style="color: oklch(0.85 0.01 285);">{stats.total_messages}</div>
+        <div class="stat-value" style="color: #f1f5f9;">{stats.total_messages}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background: {brand}15; color: {brand};">
+        <div class="stat-icon" style="background: #818cf822; color: #818cf8;">
           <ShieldCheck class="w-4 h-4" />
         </div>
         <div class="stat-label">Admins</div>
-        <div class="stat-value" style="color: oklch(0.85 0.01 285);">{stats.admins}</div>
+        <div class="stat-value" style="color: #f1f5f9;">{stats.admins}</div>
       </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <div class="chart-card">
-        <div class="text-sm font-semibold mb-4 font-[family-name:var(--font-family-display)]" style="color: oklch(0.75 0.01 285);">Users by Role</div>
+        <div class="text-sm font-semibold mb-4" style="color: #e2e8f0;">Users by Role</div>
         <div class="flex justify-center py-2">
           <DoughnutChart data={roleData} size={160} />
         </div>
       </div>
       <div class="chart-card">
-        <div class="text-sm font-semibold mb-4 font-[family-name:var(--font-family-display)]" style="color: oklch(0.75 0.01 285);">Content Overview</div>
+        <div class="text-sm font-semibold mb-4" style="color: #e2e8f0;">Content Overview</div>
         <div class="py-2">
           <BarChart data={serverData} height={150} />
         </div>
@@ -148,12 +143,12 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <a href="/app/admin/users" class="nav-card">
-        <div class="text-sm font-semibold font-[family-name:var(--font-family-display)]" style="color: oklch(0.82 0.01 285);">Manage Users</div>
-        <div class="text-xs mt-1" style="color: oklch(0.5 0.01 285);">View, promote, demote, or remove users</div>
+        <div class="text-sm font-semibold" style="color: #e2e8f0;">Manage Users</div>
+        <div class="text-xs mt-1" style="color: #94a3b8;">View, promote, demote, or remove users</div>
       </a>
       <a href="/app/admin/servers" class="nav-card">
-        <div class="text-sm font-semibold font-[family-name:var(--font-family-display)]" style="color: oklch(0.82 0.01 285);">Manage Servers</div>
-        <div class="text-xs mt-1" style="color: oklch(0.5 0.01 285);">Browse and remove servers and their content</div>
+        <div class="text-sm font-semibold" style="color: #e2e8f0;">Manage Servers</div>
+        <div class="text-xs mt-1" style="color: #94a3b8;">Browse and remove servers and their content</div>
       </a>
     </div>
   {/if}
@@ -161,15 +156,15 @@
 
 <style>
   :global(.stat-card) {
-    background: oklch(0.1 0.005 285);
-    border: 1px solid oklch(0.16 0.008 285);
+    background: #1e293b;
+    border: 1px solid #334155;
     border-radius: 12px;
     padding: 14px 16px;
     transition: border-color 0.2s, background 0.2s;
   }
   :global(.stat-card:hover) {
-    border-color: oklch(0.22 0.012 285);
-    background: oklch(0.115 0.006 285);
+    border-color: #475569;
+    background: #1e293b;
   }
   :global(.stat-icon) {
     width: 28px;
@@ -182,55 +177,54 @@
   }
   :global(.stat-label) {
     font-size: 10px;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: oklch(0.5 0.01 285);
+    color: #94a3b8;
     margin-bottom: 2px;
   }
   :global(.stat-value) {
-    font-size: 22px;
-    font-weight: 700;
-    font-family: var(--font-family-display), system-ui, sans-serif;
+    font-size: 24px;
+    font-weight: 800;
     line-height: 1.1;
   }
   :global(.stat-sub) {
-    font-size: 10px;
-    color: oklch(0.45 0.01 285);
+    font-size: 11px;
+    color: #64748b;
     margin-top: 2px;
   }
-  :global(.stat-trend) {
-    height: 2px;
-    background: oklch(0.15 0.008 285);
-    border-radius: 2px;
+  :global(.stat-bar) {
+    height: 3px;
+    background: #334155;
+    border-radius: 3px;
     margin-top: 8px;
     overflow: hidden;
   }
-  :global(.trend-bar) {
+  :global(.stat-bar-fill) {
     height: 100%;
-    border-radius: 2px;
+    border-radius: 3px;
     transition: width 0.6s ease;
   }
   :global(.chart-card) {
-    background: oklch(0.1 0.005 285);
-    border: 1px solid oklch(0.16 0.008 285);
+    background: #1e293b;
+    border: 1px solid #334155;
     border-radius: 12px;
     padding: 20px;
     transition: border-color 0.2s;
   }
   :global(.chart-card:hover) {
-    border-color: oklch(0.22 0.012 285);
+    border-color: #475569;
   }
   :global(.nav-card) {
     display: block;
-    background: oklch(0.1 0.005 285);
-    border: 1px solid oklch(0.16 0.008 285);
+    background: #1e293b;
+    border: 1px solid #334155;
     border-radius: 12px;
     padding: 16px 20px;
     transition: border-color 0.2s, background 0.2s;
   }
   :global(.nav-card:hover) {
-    border-color: oklch(0.58 0.2 285 / 0.3);
-    background: oklch(0.12 0.008 285);
+    border-color: #6366f1;
+    background: #1e293b;
   }
 </style>
