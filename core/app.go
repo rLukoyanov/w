@@ -3,11 +3,13 @@ package core
 import (
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/rLukoyanov/w/apis"
 	"github.com/rLukoyanov/w/apis/ws"
 	"github.com/rLukoyanov/w/config"
+	"github.com/rLukoyanov/w/storage"
 	"github.com/rLukoyanov/w/store"
 	"github.com/rs/zerolog/log"
 )
@@ -35,6 +37,10 @@ func New(cfg *config.Config) *App {
 		cfg.JWTSecret = "change-me-in-production"
 	}
 
+	if cfg.UploadDir == "" {
+		cfg.UploadDir = filepath.Join(filepath.Dir(cfg.DBPath), "uploads")
+	}
+
 	return &App{
 		Config: cfg,
 	}
@@ -59,12 +65,19 @@ func (a *App) Run() error {
 	}
 	log.Info().Msg("migrations applied")
 
+	// Initialize file storage
+	fileStorage, err := storage.NewLocalStorage(a.Config.UploadDir)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to initialize file storage")
+		return err
+	}
+
 	// Initialize WebSocket hub
 	hub := ws.NewHub(a.store, log.Logger)
 	go hub.Run()
 
 	// Initialize HTTP server
-	a.server = apis.NewServer(a.store, hub, a.Config.Port, a.Config.JWTSecret)
+	a.server = apis.NewServer(a.store, hub, a.Config.Port, a.Config.JWTSecret, fileStorage)
 
 	// Start server in goroutine
 	errChan := make(chan error, 1)

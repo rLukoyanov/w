@@ -9,13 +9,14 @@ import (
 )
 
 type Store struct {
-	db             *sql.DB
-	users          repository.UsersRepository
-	servers        repository.ServersRepository
-	channels       repository.ChannelsRepository
-	messages       repository.MessagesRepository
-	serverMembers  repository.ServerMembersRepository
-	serverInvites  repository.ServerInvitesRepository
+	db            *sql.DB
+	users         repository.UsersRepository
+	servers       repository.ServersRepository
+	channels      repository.ChannelsRepository
+	messages      repository.MessagesRepository
+	serverMembers repository.ServerMembersRepository
+	serverInvites repository.ServerInvitesRepository
+	attachments   repository.AttachmentsRepository
 }
 
 func New(dsn string) (*Store, error) {
@@ -33,6 +34,7 @@ func New(dsn string) (*Store, error) {
 		messages:      &MessagesRepository{db: db},
 		serverMembers: &ServerMembersRepository{db: db},
 		serverInvites: &ServerInvitesRepository{db: db},
+		attachments:   &AttachmentsRepository{db: db},
 	}, nil
 }
 
@@ -58,6 +60,10 @@ func (s *Store) ServerMembers() repository.ServerMembersRepository {
 
 func (s *Store) ServerInvites() repository.ServerInvitesRepository {
 	return s.serverInvites
+}
+
+func (s *Store) Attachments() repository.AttachmentsRepository {
+	return s.attachments
 }
 
 func (s *Store) Migrate(migrationsDir string) error {

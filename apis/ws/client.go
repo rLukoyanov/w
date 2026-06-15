@@ -185,9 +185,30 @@ func (c *Client) handleTypingStart(data json.RawMessage) error {
 		return err
 	}
 
+	typingData.UserID = c.UserID
+	dataBytes, _ := json.Marshal(typingData)
+
 	c.hub.BroadcastToChannel(typingData.ChannelID, &Event{
 		Type: TypingStart,
-		Data: data,
+		Data: dataBytes,
+	})
+
+	return nil
+}
+
+// handleTypingStop handles TYPING_STOP events
+func (c *Client) handleTypingStop(data json.RawMessage) error {
+	var typingData TypingStartData
+	if err := json.Unmarshal(data, &typingData); err != nil {
+		return err
+	}
+
+	typingData.UserID = c.UserID
+	dataBytes, _ := json.Marshal(typingData)
+
+	c.hub.BroadcastToChannel(typingData.ChannelID, &Event{
+		Type: TypingStop,
+		Data: dataBytes,
 	})
 
 	return nil

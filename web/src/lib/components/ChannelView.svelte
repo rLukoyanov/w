@@ -1,7 +1,8 @@
 <script lang="ts">
-  import type { Channel, Message } from "$lib/api";
-  import { Hash, Send, MessageCircle } from "lucide-svelte";
+  import type { Channel, Message, Attachment } from "$lib/api";
+  import { Hash, Send, Paperclip, File, Image, X, Loader, MessageCircle } from "lucide-svelte";
   import { onMount, tick } from "svelte";
+  import { BASE_URL } from "$lib/api/client";
 
   interface Props {
     channel: Channel | null;
@@ -11,6 +12,9 @@
     hasMore?: boolean;
     onSend: (content: string) => Promise<void>;
     onLoadMore?: () => void;
+    onTyping?: () => void;
+    onStopTyping?: () => void;
+    typingUsers?: string[];
   }
 
   let {
@@ -21,10 +25,15 @@
     hasMore = false,
     onSend,
     onLoadMore,
+    onTyping,
+    onStopTyping,
+    typingUsers = [],
   }: Props = $props();
   let input = $state("");
   let scrollContainer = $state<HTMLDivElement | null>(null);
   let sentinel = $state<HTMLDivElement | null>(null);
+  let fileUploading = $state(false);
+  let fileInput = $state<HTMLInputElement | null>(null);
 
   onMount(() => {
     scrollToBottom();
@@ -67,11 +76,52 @@
     });
   }
 
+  function handleInput() {
+    if (onTyping) onTyping();
+  }
+
+  function handleBlur() {
+    if (onStopTyping) onStopTyping();
+  }
+
   async function handleSend() {
     const content = input.trim();
     if (!content) return;
     await onSend(content);
     input = "";
+    if (onStopTyping) onStopTyping();
+  }
+
+  async function handleFileSelect(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file || !channel) return;
+
+    fileUploading = true;
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${BASE_URL}/api/channels/${channel.id}/attachments`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const attachment: Attachment = await res.json();
+
+      await onSend(attachment.url);
+
+      scrollToBottom();
+    } catch (err) {
+      console.error("Upload error:", err);
+    } finally {
+      fileUploading = false;
+      if (fileInput) fileInput.value = "";
+    }
   }
 
   function formatTime(dateStr: string): string {
@@ -95,9 +145,25 @@
       "oklch(0.55 0.15 200 / 0.2)",
     ];
     const seed = msg.author?.username ?? msg.author_id;
-    const index =
-      seed.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % colors.length;
+    const index = seed.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % colors.length;
     return colors[index];
+  }
+
+  function formatSize(bytes: number): string {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
+  function isImage(filename: string): boolean {
+    return /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(filename);
+  }
+
+  function typingText(): string {
+    if (typingUsers.length === 0) return "";
+    if (typingUsers.length === 1) return `${typingUsers[0]} is typing...`;
+    if (typingUsers.length === 2) return `${typingUsers[0]} and ${typingUsers[1]} are typing...`;
+    return `${typingUsers[0]} and ${typingUsers.length - 1} others are typing...`;
   }
 </script>
 
@@ -133,7 +199,7 @@
         {/if}
 
         {#each messages as msg}
-          <div class="flex gap-2.5 group px-2 py-1.5 rounded-lg transition-colors hover:oklch(0.15 0.008 285 / 0.3)">
+          <div class="flex gap-2.5 group px-2 py-1.5 rounded-lg transition-colors">
             <div
               class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 font-[family-name:var(--font-family-display)]"
               style="background: {avatarColor(msg)};">
@@ -149,9 +215,32 @@
               </div>
               <p class="text-sm leading-relaxed mt-0.5 wrap-break-word"
                 style="color: oklch(0.88 0.005 285);">{msg.content}</p>
+              {#if msg.attachments}
+                {#each msg.attachments as att}
+                  <a href={att.url} target="_blank" rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 mt-1.5 px-3 py-2 rounded-lg text-xs transition-colors att-link"
+                    style="background: oklch(0.12 0.006 285); color: oklch(0.72 0.18 285);">
+                    {#if isImage(att.filename)}
+                      <Image class="w-3.5 h-3.5 shrink-0" />
+                    {:else}
+                      <File class="w-3.5 h-3.5 shrink-0" />
+                    {/if}
+                    <span class="truncate max-w-[200px]">{att.filename}</span>
+                    <span style="color: oklch(0.45 0.01 285);">({formatSize(att.size)})</span>
+                  </a>
+                {/each}
+              {/if}
             </div>
           </div>
         {/each}
+
+        {#if typingText()}
+          <div class="flex items-center gap-2 px-2 py-1 text-xs italic"
+            style="color: oklch(0.5 0.01 285);">
+            <span class="loading loading-dots loading-xs"></span>
+            {typingText()}
+          </div>
+        {/if}
       {/if}
     </div>
 
@@ -163,9 +252,30 @@
         }}
         class="flex gap-2"
       >
+        <button
+          type="button"
+          disabled={fileUploading}
+          class="btn btn-sm btn-ghost px-2"
+          style="color: oklch(0.5 0.01 285);"
+          onclick={() => fileInput?.click()}
+        >
+          {#if fileUploading}
+            <Loader class="w-4 h-4 animate-spin" />
+          {:else}
+            <Paperclip class="w-4 h-4" />
+          {/if}
+        </button>
+        <input
+          type="file"
+          bind:this={fileInput}
+          class="hidden"
+          onchange={handleFileSelect}
+        />
         <input
           type="text"
           bind:value={input}
+          oninput={handleInput}
+          onblur={handleBlur}
           placeholder="Type a message..."
           class="input input-sm flex-1"
           style="background: oklch(0.12 0.006 285); border-color: oklch(0.22 0.01 285); color: oklch(0.92 0.004 285);"
@@ -192,3 +302,9 @@
     </div>
   {/if}
 </div>
+
+<style>
+  .att-link:hover {
+    background: oklch(0.15 0.008 285) !important;
+  }
+</style>

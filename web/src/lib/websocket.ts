@@ -30,6 +30,11 @@ export interface MessagePayload {
   created_at: string;
 }
 
+export interface TypingPayload {
+  channel_id: string;
+  user_id: string;
+}
+
 const WS_HOST =
   typeof window !== "undefined"
     ? import.meta.env.VITE_WS_HOST ?? `${window.location.hostname}:8090`
@@ -44,6 +49,7 @@ class WebSocketClient {
 
   public connected: Writable<boolean> = writable(false);
   public messages: Writable<MessagePayload[]> = writable([]);
+  public typingUsers: Writable<Map<string, { user_id: string; channel_id: string; username?: string }>> = writable(new Map());
 
   private eventHandlers: Map<EventType, Set<(data: any) => void>> = new Map();
 
@@ -64,7 +70,6 @@ class WebSocketClient {
         this.reconnectTimer = null;
       }
 
-      // Re-subscribe to previous channel if any
       if (this.subscribedChannelId) {
         this.sendRaw({ type: "SUBSCRIBE", data: { channel_id: this.subscribedChannelId } });
       }
@@ -136,9 +141,33 @@ class WebSocketClient {
     });
   }
 
+  private typingTimeout: number | null = null;
+
   sendTyping(channelId: string) {
     this.sendRaw({
       type: "TYPING_START",
+      data: { channel_id: channelId },
+    });
+
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
+
+    this.typingTimeout = setTimeout(() => {
+      this.sendRaw({
+        type: "TYPING_STOP",
+        data: { channel_id: channelId },
+      });
+    }, 3000) as unknown as number;
+  }
+
+  sendTypingStop(channelId: string) {
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+      this.typingTimeout = null;
+    }
+    this.sendRaw({
+      type: "TYPING_STOP",
       data: { channel_id: channelId },
     });
   }
@@ -146,7 +175,6 @@ class WebSocketClient {
   subscribe(channelId: string) {
     if (this.subscribedChannelId === channelId) return;
 
-    // Unsubscribe from previous channel
     if (this.subscribedChannelId) {
       this.sendRaw({ type: "UNSUBSCRIBE", data: { channel_id: this.subscribedChannelId } });
     }
@@ -169,6 +197,11 @@ class WebSocketClient {
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
+    }
+
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+      this.typingTimeout = null;
     }
 
     if (this.ws) {

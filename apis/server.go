@@ -15,25 +15,25 @@ import (
 	"github.com/rLukoyanov/w/apis/handlers"
 	"github.com/rLukoyanov/w/apis/middlewares"
 	"github.com/rLukoyanov/w/apis/ws"
+	"github.com/rLukoyanov/w/storage"
 	"github.com/rLukoyanov/w/store"
 	"github.com/rLukoyanov/w/web"
-	"github.com/rs/zerolog/log"
 )
 
 type Server struct {
-	app       *fiber.App
-	store     store.Store
-	port      int
-	hub       *ws.Hub
-	jwtSecret string
+	app         *fiber.App
+	store       store.Store
+	port        int
+	hub         *ws.Hub
+	jwtSecret   string
+	fileStorage storage.FileStorage
 }
 
-func NewServer(st store.Store, hub *ws.Hub, port int, jwtSecret string) *Server {
+func NewServer(st store.Store, hub *ws.Hub, port int, jwtSecret string, fs storage.FileStorage) *Server {
 	app := fiber.New(fiber.Config{
 		AppName: "W",
 	})
 
-	// Middleware
 	app.Use(recover.New())
 	app.Use(middlewares.Zerolog())
 	app.Use(cors.New(cors.Config{
@@ -42,11 +42,12 @@ func NewServer(st store.Store, hub *ws.Hub, port int, jwtSecret string) *Server 
 	}))
 
 	s := &Server{
-		app:       app,
-		store:     st,
-		port:      port,
-		hub:       hub,
-		jwtSecret: jwtSecret,
+		app:         app,
+		store:       st,
+		port:        port,
+		hub:         hub,
+		jwtSecret:   jwtSecret,
+		fileStorage: fs,
 	}
 
 	s.setupRoutes(jwtSecret)
@@ -56,19 +57,16 @@ func NewServer(st store.Store, hub *ws.Hub, port int, jwtSecret string) *Server 
 func (s *Server) setupRoutes(jwtSecret string) {
 	api := s.app.Group("/api")
 
-	// Auth routes
 	authHandler := handlers.NewAuthHandler(s.store, jwtSecret)
 	auth := api.Group("/auth")
 	auth.Post("/register", authHandler.Register)
 	auth.Post("/login", authHandler.Login)
 
-	// Protected routes
 	protected := api.Group("")
 	protected.Use(middlewares.JWTAuth(jwtSecret))
 
 	protected.Get("/auth/me", authHandler.Me)
 
-	// Servers
 	serversHandler := handlers.NewServersHandler(s.store)
 	protected.Post("/servers", serversHandler.Create)
 	protected.Get("/servers", serversHandler.GetAll)
@@ -77,45 +75,38 @@ func (s *Server) setupRoutes(jwtSecret string) {
 	protected.Patch("/servers/:id", serversHandler.Update)
 	protected.Delete("/servers/:id", serversHandler.Delete)
 
-	// Channels
 	channelsHandler := handlers.NewChannelsHandler(s.store)
 	protected.Post("/servers/:id/channels", channelsHandler.Create)
 	protected.Get("/servers/:id/channels", channelsHandler.GetByServerID)
 	protected.Get("/channels/:id", channelsHandler.GetByID)
 	protected.Delete("/channels/:id", channelsHandler.Delete)
 
-	// Messages
 	messagesHandler := handlers.NewMessagesHandler(s.store)
 	protected.Get("/channels/:id/messages", messagesHandler.GetByChannelID)
 	protected.Post("/channels/:id/messages", messagesHandler.Create)
 	protected.Patch("/messages/:id", messagesHandler.Update)
 	protected.Delete("/messages/:id", messagesHandler.Delete)
 
-	// Users / Presence
 	usersHandler := handlers.NewUsersHandler(s.store, s.hub)
 	protected.Get("/users/connected", usersHandler.ListConnected)
 
-	// Invites
 	invitesHandler := handlers.NewInvitesHandler(s.store)
 	protected.Post("/servers/:id/invites", invitesHandler.Create)
 	protected.Get("/servers/:id/invites", invitesHandler.ListByServer)
 	protected.Delete("/invites/:id", invitesHandler.Delete)
 	protected.Post("/invites/:code/join", invitesHandler.Join)
 
-	// OpenAPI docs
+	filesHandler := handlers.NewFilesHandler(s.store, s.fileStorage)
+	protected.Post("/channels/:id/attachments", filesHandler.Upload)
+	protected.Get("/attachments/:id", filesHandler.Download)
+
 	protected.Get("/openapi.yaml", OpenAPISpec)
 	protected.Get("/openapi.json", OpenAPISpecJSON)
 
-	// WebSocket endpoint
-	s.app.Get("/ws", websocket.New(s.handleWebSocket, websocket.Config{
-		// Allow connections from any origin for development
-		// TODO: Restrict in production
-	}))
+	s.app.Get("/ws", websocket.New(s.handleWebSocket, websocket.Config{}))
 
-	// Swagger UI docs
 	s.app.Get("/docs", SwaggerUI)
 
-	// Serve embedded SvelteKit frontend
 	distFS, err := fs.Sub(web.DistFS, "build")
 	if err != nil {
 		panic(fmt.Sprintf("failed to get dist subdirectory: %v", err))
@@ -125,18 +116,15 @@ func (s *Server) setupRoutes(jwtSecret string) {
 		Root:         http.FS(distFS),
 		Browse:       false,
 		Index:        "index.html",
-		NotFoundFile: "index.html", // SPA fallback
+		NotFoundFile: "index.html",
 		Next: func(c *fiber.Ctx) bool {
-			// Skip filesystem middleware for API, WebSocket, and docs routes
 			path := c.Path()
-			log.Debug().Str("path", path).Msg("checking if path should be handled by filesystem")
 			return strings.HasPrefix(path, "/api") || strings.HasPrefix(path, "/ws") || strings.HasPrefix(path, "/docs")
 		},
 	}))
 }
 
 func (s *Server) handleWebSocket(c *websocket.Conn) {
-	// Get token from query parameter
 	token := c.Query("token")
 	if token == "" {
 		c.WriteJSON(fiber.Map{"error": "missing token"})
@@ -144,7 +132,6 @@ func (s *Server) handleWebSocket(c *websocket.Conn) {
 		return
 	}
 
-	// Validate JWT token
 	claims := &jwt.MapClaims{}
 	parsedToken, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
 		return []byte(s.jwtSecret), nil
@@ -156,7 +143,6 @@ func (s *Server) handleWebSocket(c *websocket.Conn) {
 		return
 	}
 
-	// Extract user ID from claims
 	userID, ok := (*claims)["user_id"].(string)
 	if !ok {
 		c.WriteJSON(fiber.Map{"error": "invalid user_id in token"})
@@ -164,15 +150,12 @@ func (s *Server) handleWebSocket(c *websocket.Conn) {
 		return
 	}
 
-	// Create new client
 	client := ws.NewClient(userID, c, s.hub)
 
-	// Register client with hub
 	s.hub.Register(client)
 
-	// Start goroutines
 	go client.WritePump()
-	client.ReadPump() // Blocks until connection closes
+	client.ReadPump()
 }
 
 func (s *Server) Start() error {

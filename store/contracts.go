@@ -12,4 +12,5 @@ type Store interface {
 	Messages() repository.MessagesRepository
 	ServerMembers() repository.ServerMembersRepository
 	ServerInvites() repository.ServerInvitesRepository
+	Attachments() repository.AttachmentsRepository
 }

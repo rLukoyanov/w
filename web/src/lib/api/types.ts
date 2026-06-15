@@ -40,6 +40,14 @@ export interface Channel {
 	created_at: string;
 }
 
+export interface Attachment {
+	id: string;
+	filename: string;
+	size: number;
+	content_type: string;
+	url: string;
+}
+
 export interface Message {
   id: string;
   channel_id: string;
@@ -50,5 +58,6 @@ export interface Message {
     email: string;
   };
   content: string;
+  attachments?: Attachment[];
   created_at: string;
 }

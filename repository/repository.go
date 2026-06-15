@@ -55,3 +55,10 @@ type ServerInvitesRepository interface {
 	IncrementUseCount(id string) error
 	Delete(id string) error
 }
+
+type AttachmentsRepository interface {
+	Create(attachment *models.Attachment) error
+	GetByID(id string) (*models.Attachment, error)
+	GetByChannelID(channelID string) ([]*models.Attachment, error)
+	Delete(id string) error
+}
