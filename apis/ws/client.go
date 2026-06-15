@@ -186,6 +186,13 @@ func (c *Client) handleTypingStart(data json.RawMessage) error {
 	}
 
 	typingData.UserID = c.UserID
+
+	if user, err := c.store.Users().GetByID(c.UserID); err == nil && user != nil {
+		typingData.Username = user.Username
+	} else {
+		typingData.Username = c.UserID[:8]
+	}
+
 	dataBytes, _ := json.Marshal(typingData)
 
 	c.hub.BroadcastToChannel(typingData.ChannelID, &Event{
@@ -204,6 +211,13 @@ func (c *Client) handleTypingStop(data json.RawMessage) error {
 	}
 
 	typingData.UserID = c.UserID
+
+	if user, err := c.store.Users().GetByID(c.UserID); err == nil && user != nil {
+		typingData.Username = user.Username
+	} else {
+		typingData.Username = c.UserID[:8]
+	}
+
 	dataBytes, _ := json.Marshal(typingData)
 
 	c.hub.BroadcastToChannel(typingData.ChannelID, &Event{

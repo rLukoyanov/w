@@ -82,7 +82,7 @@
         clearTimeout(typingTimeouts.get(data.user_id)!);
       }
     } else {
-      typingUsers = [...typingUsers, { user_id: data.user_id, username: data.user_id.slice(0, 8) }];
+      typingUsers = [...typingUsers, { user_id: data.user_id, username: data.username || data.user_id.slice(0, 8) }];
     }
 
     const timeout = setTimeout(() => {

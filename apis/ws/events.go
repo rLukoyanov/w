@@ -52,6 +52,7 @@ type MessageDeleteData struct {
 type TypingStartData struct {
 	ChannelID string `json:"channel_id"`
 	UserID    string `json:"user_id"`
+	Username  string `json:"username"`
 }
 
 // SubscribeData represents a channel subscription request
