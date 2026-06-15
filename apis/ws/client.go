@@ -115,6 +115,8 @@ func (c *Client) handleEvent(event *Event) error {
 		return c.handleMessageCreate(event.Data)
 	case TypingStart:
 		return c.handleTypingStart(event.Data)
+	case TypingStop:
+		return c.handleTypingStop(event.Data)
 	case Subscribe:
 		return c.handleSubscribe(event.Data)
 	case Unsubscribe:
