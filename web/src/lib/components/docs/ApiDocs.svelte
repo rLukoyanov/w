@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { OpenAPISpec, TagGroup } from "$lib/api/docs";
   import { fetchSpec, groupByTag } from "$lib/api/docs";
+  import { onMount } from "svelte";
   import ApiNav from "./ApiNav.svelte";
   import ApiTagGroup from "./ApiTagGroup.svelte";
 
@@ -10,12 +11,13 @@
   let activeTag = $state("");
   let loading = $state(true);
 
-  $effect(() => {
+  onMount(() => {
     fetchSpec()
       .then((data) => {
         spec = data;
-        groups = groupByTag(data);
-        if (groups.length > 0) activeTag = groups[0].tag;
+        const g = groupByTag(data);
+        groups = g;
+        if (g.length > 0) activeTag = g[0].tag;
       })
       .catch((e: Error) => error = e.message)
       .finally(() => loading = false);
@@ -25,7 +27,6 @@
 </script>
 
 <div class="flex h-full">
-  <!-- Sidebar -->
   <aside class="w-56 shrink-0 overflow-y-auto border-r p-3" style="background: oklch(0.07 0.004 285); border-color: oklch(0.15 0.008 285);">
     <div class="text-xs font-medium mb-3 px-3" style="color: oklch(0.5 0.01 285);">API Endpoints</div>
     {#if groups.length > 0}
@@ -33,7 +34,6 @@
     {/if}
   </aside>
 
-  <!-- Content -->
   <main class="flex-1 overflow-y-auto">
     {#if loading}
       <div class="flex items-center justify-center h-full">
@@ -44,6 +44,13 @@
         <div class="text-center px-6">
           <div class="text-lg font-medium mb-2" style="color: oklch(0.65 0.2 25);">Failed to load API docs</div>
           <div class="text-sm" style="color: oklch(0.5 0.01 285);">{error}</div>
+        </div>
+      </div>
+    {:else if groups.length === 0}
+      <div class="flex items-center justify-center h-full">
+        <div class="text-center px-6">
+          <div class="text-lg font-medium mb-2" style="color: oklch(0.65 0.2 25);">No endpoints found</div>
+          <div class="text-sm" style="color: oklch(0.5 0.01 285);">The API specification contains no endpoints.</div>
         </div>
       </div>
     {:else if spec && activeGroup}
@@ -61,6 +68,12 @@
         <div class="mb-6">
           <h2 class="text-lg font-bold mb-3" style="color: oklch(0.72 0.18 285);">{activeGroup.tag}</h2>
           <ApiTagGroup group={activeGroup} />
+        </div>
+      </div>
+    {:else}
+      <div class="flex items-center justify-center h-full">
+        <div class="text-center px-6">
+          <div class="text-sm" style="color: oklch(0.5 0.01 285);">Loading...</div>
         </div>
       </div>
     {/if}
