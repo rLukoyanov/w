@@ -38,6 +38,7 @@ type MessagesRepository interface {
 	GetByID(id string) (*models.Message, error)
 	GetByChannelID(channelID string, limit int) ([]*models.Message, error)
 	GetByChannelIDBefore(channelID string, before time.Time, limit int) ([]*models.Message, error)
+	CountByChannelID(channelID string) (int, error)
 	Update(message *models.Message) error
 	Delete(id string) error
 }

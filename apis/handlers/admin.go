@@ -9,11 +9,13 @@ import (
 )
 
 type StatsResponse struct {
-	TotalUsers    int `json:"total_users"`
-	TotalServers  int `json:"total_servers"`
-	TotalChannels int `json:"total_channels"`
-	TotalMessages int `json:"total_messages"`
-	OnlineUsers   int `json:"online_users"`
+	TotalUsers    int            `json:"total_users"`
+	TotalServers  int            `json:"total_servers"`
+	TotalChannels int            `json:"total_channels"`
+	TotalMessages int            `json:"total_messages"`
+	OnlineUsers   int            `json:"online_users"`
+	Admins        int            `json:"admins"`
+	UsersByRole   map[string]int `json:"users_by_role"`
 }
 
 type AdminUserItem struct {
@@ -48,6 +50,30 @@ func (h *AdminHandler) Stats(c *fiber.Ctx) error {
 
 	totalChannels := 0
 	totalMessages := 0
+	admins := 0
+	usersByRole := map[string]int{}
+
+	for _, u := range users {
+		usersByRole[u.Role]++
+		if u.Role == "admin" {
+			admins++
+		}
+	}
+
+	// Count channels
+	for _, s := range servers {
+		channels, err := h.store.Channels().GetByServerID(s.ID)
+		if err == nil {
+			totalChannels += len(channels)
+		}
+		// Count messages in each channel
+		for _, ch := range channels {
+			msgs, err := h.store.Messages().CountByChannelID(ch.ID)
+			if err == nil {
+				totalMessages += msgs
+			}
+		}
+	}
 
 	return c.JSON(StatsResponse{
 		TotalUsers:    len(users),
@@ -55,6 +81,8 @@ func (h *AdminHandler) Stats(c *fiber.Ctx) error {
 		TotalChannels: totalChannels,
 		TotalMessages: totalMessages,
 		OnlineUsers:   len(h.hub.ConnectedUsers()),
+		Admins:        admins,
+		UsersByRole:   usersByRole,
 	})
 }
 

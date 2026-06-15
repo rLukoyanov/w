@@ -130,6 +130,15 @@ func (r *MessagesRepository) GetByChannelIDBefore(channelID string, before time.
 	return messages, nil
 }
 
+func (r *MessagesRepository) CountByChannelID(channelID string) (int, error) {
+	var count int
+	err := r.db.QueryRow(`SELECT COUNT(*) FROM messages WHERE channel_id = ?`, channelID).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count messages: %w", err)
+	}
+	return count, nil
+}
+
 func (r *MessagesRepository) Update(message *models.Message) error {
 	query := `
 		UPDATE messages 
