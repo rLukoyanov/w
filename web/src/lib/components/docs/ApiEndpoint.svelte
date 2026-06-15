@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { EndpointInfo } from "$lib/api/docs";
+  import type { EndpointInfo, ParameterObject } from "$lib/api/docs";
   import ApiSchema from "./ApiSchema.svelte";
 
   let { endpoint }: { endpoint: EndpointInfo } = $props();
@@ -14,7 +14,9 @@
   let methodColor = $derived(methodColors[endpoint.method] || "oklch(0.6 0.01 285)");
 
   let op = $derived(endpoint.operation);
-  let hasParams = $derived(op.parameters && op.parameters.length > 0);
+
+  let params = $derived((op.parameters || []).filter((p): p is ParameterObject => "name" in p));
+  let hasParams = $derived(params.length > 0);
   let hasBody = $derived(!!op.requestBody);
   let hasResponses = $derived(Object.keys(op.responses).length > 0);
   let expanded = $state(false);
@@ -55,14 +57,14 @@
         <div>
           <div class="text-xs font-medium mb-2" style="color: oklch(0.6 0.01 285);">Parameters</div>
           <div class="flex flex-col gap-1">
-            {#each op.parameters! as param}
+            {#each params as param}
               <div class="flex items-start gap-3 py-1.5 px-3 rounded-lg" style="background: oklch(0.12 0.006 285);">
                 <span class="font-mono text-sm font-medium min-w-[8rem]" style="color: oklch(0.8 0.01 285);">{param.name}</span>
                 <span class="font-mono text-xs px-1.5 py-0.5 rounded" style="background: oklch(0.18 0.008 285); color: oklch(0.55 0.01 285);">{param.in}</span>
                 {#if param.required}
                   <span class="text-xs font-mono" style="color: oklch(0.65 0.2 25);">required</span>
                 {/if}
-                <span class="font-mono text-xs" style="color: oklch(0.75 0.12 185);">{param.schema.type || "string"}</span>
+                <span class="font-mono text-xs" style="color: oklch(0.75 0.12 185);">{param.schema?.type || "string"}</span>
                 {#if param.description}
                   <span class="text-xs flex-1" style="color: oklch(0.5 0.01 285);">{param.description}</span>
                 {/if}

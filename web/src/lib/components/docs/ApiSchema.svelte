@@ -3,9 +3,56 @@
   import ApiSchema from "./ApiSchema.svelte";
 
   let { schema, name }: { schema: SchemaObject; name?: string } = $props();
+
+  let resolved = $derived(schema.$ref ? { $ref: schema.$ref, type: "ref", refName: schema.$ref.replace("#/components/schemas/", "") } : null);
 </script>
 
-{#if !schema.properties && !schema.items && !schema.enum}
+{#if resolved}
+  <span class="inline-flex items-center gap-1.5">
+    {#if name}
+      <span class="font-medium text-xs" style="color: oklch(0.7 0.15 285);">{name}:</span>
+    {/if}
+    <span class="font-mono text-xs px-1.5 py-0.5 rounded" style="background: oklch(0.15 0.006 285); color: oklch(0.75 0.12 25);">
+      {resolved.refName}
+    </span>
+  </span>
+{:else if schema.allOf}
+  <div class="flex flex-col gap-1">
+    {#if name}
+      <div class="text-xs font-medium" style="color: oklch(0.7 0.15 285);">{name}:</div>
+    {/if}
+    <div class="flex flex-col gap-2">
+      {#each schema.allOf as sub, i}
+        <div class="text-xs" style="color: oklch(0.5 0.01 285);">allOf[{i}]:</div>
+        <ApiSchema schema={sub} />
+      {/each}
+    </div>
+  </div>
+{:else if schema.oneOf}
+  <div class="flex flex-col gap-1">
+    {#if name}
+      <div class="text-xs font-medium" style="color: oklch(0.7 0.15 285);">{name}:</div>
+    {/if}
+    <div class="flex flex-col gap-2">
+      {#each schema.oneOf as sub, i}
+        <div class="text-xs" style="color: oklch(0.5 0.01 285);">oneOf[{i}]:</div>
+        <ApiSchema schema={sub} />
+      {/each}
+    </div>
+  </div>
+{:else if schema.anyOf}
+  <div class="flex flex-col gap-1">
+    {#if name}
+      <div class="text-xs font-medium" style="color: oklch(0.7 0.15 285);">{name}:</div>
+    {/if}
+    <div class="flex flex-col gap-2">
+      {#each schema.anyOf as sub, i}
+        <div class="text-xs" style="color: oklch(0.5 0.01 285);">anyOf[{i}]:</div>
+        <ApiSchema schema={sub} />
+      {/each}
+    </div>
+  </div>
+{:else if !schema.properties && !schema.items && !schema.enum}
   <span class="inline-flex items-center gap-1.5">
     {#if name}
       <span class="font-medium text-xs" style="color: oklch(0.7 0.15 285);">{name}:</span>

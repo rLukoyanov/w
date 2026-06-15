@@ -46,6 +46,10 @@ export interface SchemaObject {
   description?: string;
   nullable?: boolean;
   example?: unknown;
+  $ref?: string;
+  allOf?: SchemaObject[];
+  oneOf?: SchemaObject[];
+  anyOf?: SchemaObject[];
 }
 
 export interface RequestBodyObject {
