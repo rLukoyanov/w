@@ -44,6 +44,24 @@ func (r *ServersRepository) GetByID(id string) (*models.Server, error) {
 	return server, nil
 }
 
+func (r *ServersRepository) GetAll() ([]*models.Server, error) {
+	rows, err := r.db.Query(`SELECT id, name, owner_id, created_at FROM servers ORDER BY created_at DESC`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all servers: %w", err)
+	}
+	defer rows.Close()
+
+	var servers []*models.Server
+	for rows.Next() {
+		server := &models.Server{}
+		if err := rows.Scan(&server.ID, &server.Name, &server.OwnerID, &server.CreatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan server: %w", err)
+		}
+		servers = append(servers, server)
+	}
+	return servers, rows.Err()
+}
+
 func (r *ServersRepository) GetByOwnerID(ownerID string) ([]*models.Server, error) {
 	query := `SELECT id, name, owner_id, created_at FROM servers WHERE owner_id = ?`
 

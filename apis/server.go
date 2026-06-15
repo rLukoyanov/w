@@ -100,6 +100,16 @@ func (s *Server) setupRoutes(jwtSecret string) {
 	protected.Post("/channels/:id/attachments", filesHandler.Upload)
 	protected.Get("/attachments/:id", filesHandler.Download)
 
+	adminHandler := handlers.NewAdminHandler(s.store, s.hub)
+	admin := protected.Group("/admin")
+	admin.Use(middlewares.RequireAdmin(s.store))
+	admin.Get("/stats", adminHandler.Stats)
+	admin.Get("/users", adminHandler.ListUsers)
+	admin.Patch("/users/:id/role", adminHandler.UpdateUserRole)
+	admin.Delete("/users/:id", adminHandler.DeleteUser)
+	admin.Get("/servers", adminHandler.ListServers)
+	admin.Delete("/servers/:id", adminHandler.DeleteServer)
+
 	protected.Get("/openapi.yaml", OpenAPISpec)
 	protected.Get("/openapi.json", OpenAPISpecJSON)
 

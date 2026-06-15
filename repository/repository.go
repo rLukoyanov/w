@@ -11,6 +11,7 @@ type UsersRepository interface {
 	GetByID(id string) (*models.User, error)
 	GetByEmail(email string) (*models.User, error)
 	GetByUsername(username string) (*models.User, error)
+	GetAll() ([]*models.User, error)
 	Update(user *models.User) error
 	Delete(id string) error
 }
@@ -19,6 +20,7 @@ type ServersRepository interface {
 	Create(server *models.Server) error
 	GetByID(id string) (*models.Server, error)
 	GetByOwnerID(ownerID string) ([]*models.Server, error)
+	GetAll() ([]*models.Server, error)
 	Update(server *models.Server) error
 	Delete(id string) error
 }

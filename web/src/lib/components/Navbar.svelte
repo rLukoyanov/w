@@ -5,7 +5,7 @@
   import { auth } from "$lib/stores/auth";
   import { goto } from "$app/navigation";
   import { wsClient } from "$lib/websocket";
-  import { Server, Settings, BookOpen } from "lucide-svelte";
+  import { Server, Settings, BookOpen, Shield } from "lucide-svelte";
   import { page } from "$app/state";
   import { ROUTES } from "$lib/routes";
 
@@ -18,11 +18,12 @@
 
   let isActive = (path: string) => page.url.pathname.includes(path);
 
-  const routes = [
+  let routes = $derived([
     { name: "Servers", icon: Server, path: ROUTES.SERVER.INDEX },
+    ...($auth.user?.role === "admin" ? [{ name: "Admin", icon: Shield, path: ROUTES.ADMIN.INDEX }] : []),
     { name: "Docs", icon: BookOpen, path: ROUTES.DOCS },
     { name: "Settings", icon: Settings, path: ROUTES.SETTINGS },
-  ];
+  ]);
 </script>
 
 <nav class="flex items-center w-full min-h-10 px-3"

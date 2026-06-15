@@ -19,6 +19,11 @@ export const ROUTES = {
   INVITE: {
     JOIN: (code: string) => `/app/invite/${code}`,
   },
+  ADMIN: {
+    INDEX: "/app/admin",
+    USERS: "/app/admin/users",
+    SERVERS: "/app/admin/servers",
+  },
   DOCS: "/app/docs",
   SETTINGS: "/app/settings",
 } as const;
