@@ -11,7 +11,6 @@
     onNameChange: (name: string) => void;
     onTypeChange: (type: "text" | "voice") => void;
     onKeyDown: (event: KeyboardEvent) => void;
-    onBlur: () => void;
   }
 
   let {
@@ -23,7 +22,6 @@
     onNameChange,
     onTypeChange,
     onKeyDown,
-    onBlur,
   }: Props = $props();
 
   let inputEl = $state<HTMLInputElement | null>(null);
@@ -37,11 +35,12 @@
 
 {#if isCreating}
   <div transition:slide={{ duration: 150 }}>
-    <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-base-100">
+    <div class="flex items-center gap-1.5 px-2 py-1 rounded-md"
+      style="background: oklch(0.14 0.007 285);">
       {#if channelType === "voice"}
-        <Volume2 class="w-3.5 h-3.5 text-base-content/60 shrink-0" />
+        <Volume2 class="w-3.5 h-3.5 shrink-0" style="color: oklch(0.5 0.01 285);" />
       {:else}
-        <Hash class="w-3.5 h-3.5 text-base-content/60 shrink-0" />
+        <Hash class="w-3.5 h-3.5 shrink-0" style="color: oklch(0.5 0.01 285);" />
       {/if}
       <input
         bind:this={inputEl}
@@ -50,31 +49,27 @@
         oninput={(e) => onNameChange(e.currentTarget.value)}
         placeholder="channel-name"
         class="flex-1 bg-transparent outline-none text-xs"
+        style="color: oklch(0.92 0.004 285);"
         onkeydown={onKeyDown}
-        onblur={onBlur}
       />
       <div class="flex gap-0.5">
         <button
           onclick={() => onTypeChange("text")}
-          class="px-1.5 py-0.5 rounded text-[10px] transition-colors {channelType ===
-          'text'
-            ? 'bg-primary text-primary-content'
-            : 'bg-base-200 text-base-content/60 hover:bg-base-300'}"
+          class="px-1.5 py-0.5 rounded text-[10px] transition-colors cursor-pointer"
+          style="background: {channelType === 'text' ? 'oklch(0.58 0.2 285)' : 'oklch(0.18 0.008 285)'}; color: {channelType === 'text' ? 'white' : 'oklch(0.5 0.01 285)'};"
         >
           Text
         </button>
         <button
           onclick={() => onTypeChange("voice")}
-          class="px-1.5 py-0.5 rounded text-[10px] transition-colors {channelType ===
-          'voice'
-            ? 'bg-primary text-primary-content'
-            : 'bg-base-200 text-base-content/60 hover:bg-base-300'}"
+          class="px-1.5 py-0.5 rounded text-[10px] transition-colors cursor-pointer"
+          style="background: {channelType === 'voice' ? 'oklch(0.58 0.2 285)' : 'oklch(0.18 0.008 285)'}; color: {channelType === 'voice' ? 'white' : 'oklch(0.5 0.01 285)'};"
         >
           Voice
         </button>
       </div>
     </div>
-    <div class="text-[10px] text-base-content/40 px-2 py-0.5">
+    <div class="text-[10px] px-2 py-0.5" style="color: oklch(0.4 0.01 285);">
       <kbd class="kbd kbd-xs">Tab</kbd> type •
       <kbd class="kbd kbd-xs">Enter</kbd> create •
       <kbd class="kbd kbd-xs">Esc</kbd> cancel
@@ -83,11 +78,10 @@
 {:else}
   <button
     onclick={onToggle}
-    class="flex cursor-pointer items-center gap-1.5 px-2 py-1 rounded hover:bg-base-100/50 transition-colors group w-full text-left"
+    class="flex cursor-pointer items-center gap-1.5 px-2 py-1 rounded-md transition-colors group w-full text-left"
+    style="color: oklch(0.5 0.01 285);"
   >
-    <Plus class="w-3.5 h-3.5 text-base-content/40 group-hover:text-primary shrink-0" />
-    <span class="text-xs text-base-content/60 group-hover:text-base-content">
-      New Channel
-    </span>
+    <Plus class="w-3.5 h-3.5 shrink-0" style="color: oklch(0.4 0.01 285);" />
+    <span class="text-xs">New Channel</span>
   </button>
 {/if}

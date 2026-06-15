@@ -9,7 +9,7 @@
 # tests coverage
 coverage.out
 
-docs
+/docs
 
 /bin
 
@@ -25,3 +25,5 @@ docs
 /web/node_modules
 /web/.svelte-kit
 /web/build
+
+/skills

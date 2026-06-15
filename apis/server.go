@@ -102,11 +102,18 @@ func (s *Server) setupRoutes(jwtSecret string) {
 	protected.Delete("/invites/:id", invitesHandler.Delete)
 	protected.Post("/invites/:code/join", invitesHandler.Join)
 
+	// OpenAPI docs
+	protected.Get("/openapi.yaml", OpenAPISpec)
+	protected.Get("/openapi.json", OpenAPISpecJSON)
+
 	// WebSocket endpoint
 	s.app.Get("/ws", websocket.New(s.handleWebSocket, websocket.Config{
 		// Allow connections from any origin for development
 		// TODO: Restrict in production
 	}))
+
+	// Swagger UI docs
+	s.app.Get("/docs", SwaggerUI)
 
 	// Serve embedded SvelteKit frontend
 	distFS, err := fs.Sub(web.DistFS, "build")
@@ -120,10 +127,10 @@ func (s *Server) setupRoutes(jwtSecret string) {
 		Index:        "index.html",
 		NotFoundFile: "index.html", // SPA fallback
 		Next: func(c *fiber.Ctx) bool {
-			// Skip filesystem middleware for API and WebSocket routes
+			// Skip filesystem middleware for API, WebSocket, and docs routes
 			path := c.Path()
 			log.Debug().Str("path", path).Msg("checking if path should be handled by filesystem")
-			return strings.HasPrefix(path, "/api") || strings.HasPrefix(path, "/ws")
+			return strings.HasPrefix(path, "/api") || strings.HasPrefix(path, "/ws") || strings.HasPrefix(path, "/docs")
 		},
 	}))
 }

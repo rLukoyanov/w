@@ -45,14 +45,14 @@
 <main class="h-full p-8">
   {#if ctx.loading}
     <div class="flex items-center justify-center h-full">
-      <span class="loading loading-spinner loading-lg"></span>
+      <span class="loading loading-spinner loading-lg" style="color: oklch(0.58 0.2 285);"></span>
     </div>
   {:else if ctx.servers.length === 0}
-    <!-- Empty state: no servers yet -->
     <div class="flex flex-col items-center justify-center h-full text-center">
-      <ServerIcon class="w-24 h-24 text-base-content/20 mb-6" />
-      <h1 class="text-3xl font-bold mb-2">Welcome to Weche</h1>
-      <p class="text-base-content/60 mb-8 max-w-md">
+      <ServerIcon class="w-24 h-24 mb-6" style="color: oklch(0.2 0.01 285);" />
+      <h1 class="text-3xl font-bold mb-2 font-[family-name:var(--font-family-display)]"
+        style="color: oklch(0.92 0.004 285);">Welcome to W</h1>
+      <p class="mb-8 max-w-md" style="color: oklch(0.5 0.01 285);">
         You don't have any servers yet. Create your first server to get started!
       </p>
 
@@ -62,13 +62,15 @@
             type="text"
             bind:value={newServerName}
             placeholder="Server name"
-            class="input input-bordered w-full"
+            class="input w-full"
+            style="background: oklch(0.14 0.007 285); border-color: oklch(0.22 0.01 285); color: oklch(0.92 0.004 285);"
             disabled={isCreating}
           />
           <div class="flex gap-2">
             <button
               onclick={handleCreateServer}
-              class="btn btn-primary flex-1"
+              class="btn flex-1"
+              style="background: oklch(0.58 0.2 285); color: white; {isCreating || !newServerName.trim() ? 'opacity: 0.5;' : ''}"
               disabled={isCreating || !newServerName.trim()}
             >
               {#if isCreating}
@@ -78,13 +80,15 @@
                 Create Server
               {/if}
             </button>
-            <button onclick={resetForm} class="btn btn-ghost">Cancel</button>
+            <button onclick={resetForm} class="btn btn-ghost"
+              style="color: oklch(0.6 0.01 285);">Cancel</button>
           </div>
         </div>
       {:else}
         <button
           onclick={() => (showCreateServer = true)}
-          class="btn btn-primary btn-lg gap-2"
+          class="btn btn-lg gap-2"
+          style="background: oklch(0.58 0.2 285); color: white;"
         >
           <Plus class="w-5 h-5"></Plus>
           Create your first server
@@ -92,11 +96,11 @@
       {/if}
     </div>
   {:else}
-    <!-- Servers exist: show selection prompt -->
     <div class="flex flex-col items-center justify-center h-full text-center">
-      <ServerIcon class="w-24 h-24 text-base-content/20 mb-6" />
-      <h1 class="text-3xl font-bold mb-2">Select a server</h1>
-      <p class="text-base-content/60 mb-8">
+      <ServerIcon class="w-24 h-24 mb-6" style="color: oklch(0.2 0.01 285);" />
+      <h1 class="text-3xl font-bold mb-2 font-[family-name:var(--font-family-display)]"
+        style="color: oklch(0.92 0.004 285);">Select a server</h1>
+      <p class="mb-8" style="color: oklch(0.5 0.01 285);">
         Choose a server from the sidebar to start chatting
       </p>
 
@@ -106,13 +110,15 @@
             type="text"
             bind:value={newServerName}
             placeholder="Server name"
-            class="input input-bordered w-full"
+            class="input w-full"
+            style="background: oklch(0.14 0.007 285); border-color: oklch(0.22 0.01 285); color: oklch(0.92 0.004 285);"
             disabled={isCreating}
           />
           <div class="flex gap-2">
             <button
               onclick={handleCreateServer}
-              class="btn btn-primary flex-1"
+              class="btn flex-1"
+              style="background: oklch(0.58 0.2 285); color: white; {isCreating || !newServerName.trim() ? 'opacity: 0.5;' : ''}"
               disabled={isCreating || !newServerName.trim()}
             >
               {#if isCreating}
@@ -122,13 +128,15 @@
                 Create Server
               {/if}
             </button>
-            <button onclick={resetForm} class="btn btn-ghost">Cancel</button>
+            <button onclick={resetForm} class="btn btn-ghost"
+              style="color: oklch(0.6 0.01 285);">Cancel</button>
           </div>
         </div>
       {:else}
         <button
           onclick={() => (showCreateServer = true)}
           class="btn btn-outline btn-lg gap-2"
+          style="border-color: oklch(0.3 0.01 285); color: oklch(0.6 0.01 285);"
         >
           <Plus class="w-5 h-5" />
           New Server

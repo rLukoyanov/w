@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:8090/api";
+export const BASE_URL = "http://localhost:8090";
+const API_URL = `${BASE_URL}/api`;
 
 export class BaseClient {
   private token: string | null = null;

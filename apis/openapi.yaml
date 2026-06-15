@@ -1,0 +1,1092 @@
+openapi: "3.1.0"
+info:
+  title: W API
+  description: |
+    Self-hosted team communication platform API.
+    Все эндпоинты, кроме `/api/auth/register` и `/api/auth/login`, требуют JWT-аутентификации через заголовок `Authorization: Bearer <token>`.
+  version: "0.1.0"
+  contact:
+    name: W Team
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8090
+    description: Локальный сервер разработки
+  - url: https://chat.example.com
+    description: Production-сервер (пример)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT-токен, полученный через `/api/auth/login` или `/api/auth/register`
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Описание ошибки
+      example:
+        error: "server not found"
+
+    User:
+      type: object
+      required: [id, username, email, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пользователя
+        username:
+          type: string
+          minLength: 3
+          maxLength: 32
+          description: Имя пользователя
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+        created_at:
+          type: string
+          format: date-time
+          description: Дата создания
+      example:
+        id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        username: "johndoe"
+        email: "john@example.com"
+        created_at: "2026-06-01T12:00:00Z"
+
+    AuthRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 32
+          description: Имя пользователя (только для регистрации)
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+        password:
+          type: string
+          minLength: 6
+          description: Пароль
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+          description: JWT-токен (срок действия — 7 дней)
+        user:
+          $ref: "#/components/schemas/User"
+
+    Server:
+      type: object
+      required: [id, name, owner_id, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        owner_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+
+    ServerWithChannels:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Server"
+        - type: object
+          required: [channels]
+          properties:
+            channels:
+              type: array
+              items:
+                $ref: "#/components/schemas/Channel"
+      example:
+        id: "s1"
+        name: "My Server"
+        owner_id: "u1"
+        created_at: "2026-06-01T12:00:00Z"
+        channels: []
+
+    CreateServerRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Название сервера
+
+    UpdateServerRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Новое название сервера
+
+    Channel:
+      type: object
+      required: [id, server_id, name, type, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        server_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        type:
+          type: string
+          enum: [text, voice]
+          description: Тип канала
+        created_at:
+          type: string
+          format: date-time
+
+    CreateChannelRequest:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        type:
+          type: string
+          enum: [text, voice]
+
+    Message:
+      type: object
+      required: [id, channel_id, author_id, content, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        channel_id:
+          type: string
+          format: uuid
+        author_id:
+          type: string
+          format: uuid
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        created_at:
+          type: string
+          format: date-time
+
+    AuthorInfo:
+      type: object
+      required: [id, username, email]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+
+    MessageItem:
+      type: object
+      required: [id, channel_id, author_id, author, content, created_at]
+      properties:
+        id:
+          type: string
+        channel_id:
+          type: string
+        author_id:
+          type: string
+        author:
+          $ref: "#/components/schemas/AuthorInfo"
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    MessagesResponse:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageItem"
+
+    CreateMessageRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2000
+
+    UpdateMessageRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2000
+
+    MemberInfo:
+      type: object
+      required: [user_id, username, email, joined_at, is_owner]
+      properties:
+        user_id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        joined_at:
+          type: string
+          format: date-time
+        is_owner:
+          type: boolean
+
+    UserWithStatus:
+      type: object
+      required: [id, username, email, created_at, connected]
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        connected:
+          type: boolean
+          description: Подключён ли пользователь к WebSocket
+        subscribed_channel:
+          type: string
+          description: ID канала, на который подписан
+        subscribed_channel_name:
+          type: string
+          description: Название канала
+
+    CreateInviteRequest:
+      type: object
+      properties:
+        max_uses:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: Максимальное количество использований (безлимит если null)
+        expires_in_hours:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: Через сколько часов истекает (бессрочно если null)
+
+    InviteResponse:
+      type: object
+      required: [id, server_id, code, url, created_by, use_count, created_at]
+      properties:
+        id:
+          type: string
+        server_id:
+          type: string
+        code:
+          type: string
+          description: Уникальный код приглашения
+        url:
+          type: string
+          description: URL для вступления по приглашению
+        created_by:
+          type: string
+        max_uses:
+          type: integer
+          nullable: true
+        use_count:
+          type: integer
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    JoinResponse:
+      type: object
+      required: [server_id, server_name]
+      properties:
+        server_id:
+          type: string
+        server_name:
+          type: string
+
+    WebSocketEvent:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - MESSAGE_CREATE
+            - MESSAGE_UPDATE
+            - MESSAGE_DELETE
+            - TYPING_START
+            - TYPING_STOP
+            - PRESENCE_UPDATE
+            - SUBSCRIBE
+            - UNSUBSCRIBE
+        data:
+          type: object
+
+  parameters:
+    ServerID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID сервера
+
+    ChannelID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID канала
+
+    MessageID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID сообщения
+
+    InviteID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID приглашения
+
+    InviteCode:
+      name: code
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Код приглашения
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ──────────────────────────── Auth ────────────────────────────
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Регистрация нового пользователя
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+            example:
+              username: "johndoe"
+              email: "john@example.com"
+              password: "securepassword"
+      responses:
+        "201":
+          description: Пользователь создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Пользователь с таким email или username уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Вход в систему
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+            example:
+              email: "john@example.com"
+              password: "securepassword"
+      responses:
+        "200":
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Неверный email или пароль
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Получить информацию о текущем пользователе
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Информация о пользователе
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────────────────────────── Servers ────────────────────────────
+  /api/servers:
+    get:
+      tags: [Servers]
+      summary: Список серверов пользователя
+      description: Возвращает серверы, где пользователь является владельцем или участником
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Список серверов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Server"
+
+    post:
+      tags: [Servers]
+      summary: Создать сервер
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateServerRequest"
+            example:
+              name: "My Gaming Server"
+      responses:
+        "201":
+          description: Сервер создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Server"
+        "400":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/servers/{id}:
+    get:
+      tags: [Servers]
+      summary: Получить сервер по ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ServerID"
+      responses:
+        "200":
+          description: Сервер с каналами
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerWithChannels"
+        "404":
+          description: Сервер не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    patch:
+      tags: [Servers]
+      summary: Обновить сервер
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ServerID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateServerRequest"
+            example:
+              name: "Renamed Server"
+      responses:
+        "200":
+          description: Сервер обновлён
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Server"
+        "400":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Нет прав (не владелец)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Сервер не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: [Servers]
+      summary: Удалить сервер
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ServerID"
+      responses:
+        "204":
+          description: Сервер удалён
+        "403":
+          description: Нет прав (не владелец)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Сервер не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/servers/{id}/members:
+    get:
+      tags: [Servers]
+      summary: Список участников сервера
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ServerID"
+      responses:
+        "200":
+          description: Список участников
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemberInfo"
+        "404":
+          description: Сервер не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────────────────────────── Channels ────────────────────────────
+  /api/servers/{id}/channels:
+    get:
+      tags: [Channels]
+      summary: Список каналов сервера
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ServerID"
+      responses:
+        "200":
+          description: Список каналов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Channel"
+
+    post:
+      tags: [Channels]
+      summary: Создать канал
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ServerID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChannelRequest"
+            example:
+              name: "general"
+              type: "text"
+      responses:
+        "201":
+          description: Канал создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Channel"
+        "400":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Сервер не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/channels/{id}:
+    get:
+      tags: [Channels]
+      summary: Получить канал по ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ChannelID"
+      responses:
+        "200":
+          description: Канал
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Channel"
+        "404":
+          description: Канал не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: [Channels]
+      summary: Удалить канал
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ChannelID"
+      responses:
+        "204":
+          description: Канал удалён
+        "404":
+          description: Канал не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────────────────────────── Messages ────────────────────────────
+  /api/channels/{id}/messages:
+    get:
+      tags: [Messages]
+      summary: Получить сообщения канала
+      description: Пагинация через `before` (RFC3339) и `limit` (по умолчанию 50)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ChannelID"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+          description: Максимальное количество сообщений
+        - name: before
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: RFC3339 timestamp — сообщения до этой даты
+      responses:
+        "200":
+          description: Сообщения
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagesResponse"
+        "400":
+          description: Некорректный before timestamp
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Канал не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags: [Messages]
+      summary: Отправить сообщение
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ChannelID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMessageRequest"
+            example:
+              content: "Hello, world!"
+      responses:
+        "201":
+          description: Сообщение создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageItem"
+        "400":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Канал не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/messages/{id}:
+    patch:
+      tags: [Messages]
+      summary: Редактировать сообщение
+      description: Только автор сообщения может его редактировать
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/MessageID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMessageRequest"
+            example:
+              content: "Edited message"
+      responses:
+        "200":
+          description: Сообщение обновлено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageItem"
+        "400":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Нет прав (не автор)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Сообщение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: [Messages]
+      summary: Удалить сообщение
+      description: Только автор сообщения может его удалить
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/MessageID"
+      responses:
+        "204":
+          description: Сообщение удалено
+        "403":
+          description: Нет прав (не автор)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Сообщение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────────────────────────── Users / Presence ────────────────────
+  /api/users/connected:
+    get:
+      tags: [Users]
+      summary: Список подключённых пользователей
+      description: Возвращает пользователей, которые в данный момент подключены к WebSocket
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Список подключённых пользователей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserWithStatus"
+
+  # ──────────────────────────── Invites ────────────────────────────
+  /api/servers/{id}/invites:
+    get:
+      tags: [Invites]
+      summary: Список приглашений сервера
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ServerID"
+      responses:
+        "200":
+          description: Список приглашений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InviteResponse"
+        "403":
+          description: Нет прав (не владелец)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Сервер не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags: [Invites]
+      summary: Создать приглашение
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ServerID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInviteRequest"
+            example:
+              max_uses: 10
+              expires_in_hours: 24
+      responses:
+        "201":
+          description: Приглашение создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteResponse"
+        "400":
+          description: Некорректное тело запроса
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Нет прав (не владелец)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Сервер не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/invites/{id}:
+    delete:
+      tags: [Invites]
+      summary: Удалить приглашение
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/InviteID"
+      responses:
+        "204":
+          description: Приглашение удалено
+        "404":
+          description: Приглашение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/invites/{code}/join:
+    post:
+      tags: [Invites]
+      summary: Вступить в сервер по приглашению
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/InviteCode"
+      responses:
+        "200":
+          description: Успешное вступление
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JoinResponse"
+        "404":
+          description: Приглашение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Уже участник сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "410":
+          description: Приглашение истекло или достигло лимита использований
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────────────────────────── WebSocket ────────────────────────────
+  /ws:
+    get:
+      tags: [WebSocket]
+      summary: WebSocket endpoint
+      description: |
+        Подключение к WebSocket для получения событий в реальном времени.
+        Токен передаётся в query-параметре `?token=<jwt>`.
+
+        **Исходящие события (от сервера клиенту):**
+        - `MESSAGE_CREATE` — новое сообщение
+        - `MESSAGE_UPDATE` — сообщение изменено
+        - `MESSAGE_DELETE` — сообщение удалено
+        - `TYPING_START` — пользователь начал печатать
+        - `TYPING_STOP` — пользователь перестал печатать
+        - `PRESENCE_UPDATE` — статус пользователя изменился
+
+        **Входящие события (от клиента серверу):**
+        - `SUBSCRIBE` — подписаться на канал (`{ channel_id: string }`)
+        - `UNSUBSCRIBE` — отписаться от канала (`{ channel_id: string }`)
+        - `TYPING_START` — сигнал о начале печати (`{ channel_id: string }`)
+        - `TYPING_STOP` — сигнал о конце печати (`{ channel_id: string }`)
+      security: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: JWT-токен
+      responses:
+        "101":
+          description: Успешное подключение, переключение протоколов
+        "400":
+          description: Отсутствует токен

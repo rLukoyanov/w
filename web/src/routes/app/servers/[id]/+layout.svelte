@@ -8,7 +8,7 @@
   import { notify } from "$lib/stores/notifications";
   import { auth } from "$lib/stores/auth";
   import { goto } from "$app/navigation";
-  import { Settings } from "lucide-svelte";
+  import { Settings, Plus } from "lucide-svelte";
 
   interface Props {
     params: { id: string };
@@ -110,33 +110,62 @@
 </script>
 
 {#if isLoading}
-  <div class="flex items-center justify-center h-full bg-base-200">
-    <span class="loading loading-spinner loading-lg"></span>
+  <div class="flex items-center justify-center h-full">
+    <span class="loading loading-spinner loading-lg" style="color: oklch(0.58 0.2 285);"></span>
   </div>
 {:else if server}
-  <div class="grid grid-cols-[300px_1fr] h-full bg-base-200">
-    <div class="flex flex-col overflow-y-auto border-r border-base-300">
-      <header class="px-3 py-2 border-b border-base-300">
+  <div class="flex h-full">
+    <div class="flex flex-col overflow-y-auto shrink-0"
+      style="width: 280px; border-right: 1px solid oklch(0.16 0.008 285);">
+      <header class="px-3 py-2.5 shrink-0"
+        style="border-bottom: 1px solid oklch(0.16 0.008 285);">
         <div class="flex items-center justify-between">
           <div class="min-w-0">
-            <h1 class="text-sm font-bold truncate">{server.name}</h1>
-            <p class="text-[10px] text-base-content/60">
+            <h1 class="text-sm font-bold truncate font-[family-name:var(--font-family-display)]"
+              style="color: oklch(0.92 0.004 285);">{server.name}</h1>
+            <p class="text-[10px]" style="color: oklch(0.45 0.01 285);">
               {channels.length} channel{channels.length !== 1 ? "s" : ""}
             </p>
           </div>
-          {#if server?.owner_id === $auth.user?.id}
-            <a
-              href={ROUTES.SERVER.SETTINGS(params.id)}
-              class="btn btn-ghost btn-xs btn-square shrink-0 transition-all duration-200 hover:rotate-90 hover:scale-110 hover:bg-base-300 hover:text-primary"
-              aria-label="Server settings"
+          <div class="flex items-center gap-0.5">
+            <button
+              onclick={() => (isCreating = !isCreating)}
+              class="btn btn-ghost btn-sm btn-square shrink-0 transition-all duration-200"
+              aria-label="Create channel"
+              style="color: {isCreating ? 'oklch(0.62 0.18 285)' : 'oklch(0.5 0.01 285)'};"
             >
-              <Settings class="w-3.5 h-3.5 transition-all duration-200" />
-            </a>
-          {/if}
+              <Plus class="w-3.5 h-3.5" />
+            </button>
+            {#if server?.owner_id === $auth.user?.id}
+              <a
+                href={ROUTES.SERVER.SETTINGS(params.id)}
+                class="btn btn-ghost btn-sm btn-square shrink-0 transition-all duration-200"
+                aria-label="Server settings"
+                style="color: oklch(0.5 0.01 285); hover:color: oklch(0.62 0.18 285);"
+              >
+                <Settings class="w-3.5 h-3.5" />
+              </a>
+            {/if}
+          </div>
         </div>
       </header>
 
-      <div class="flex-1 p-1 space-y-px">
+      {#if isCreating}
+        <div class="px-2 py-1.5 shrink-0" style="background: oklch(0.09 0.005 285); border-bottom: 1px solid oklch(0.16 0.008 285);">
+          <CreateChannelForm
+            {isCreating}
+            channelName={newChannelName}
+            {channelType}
+            error={null}
+            onToggle={() => (isCreating = true)}
+            onNameChange={(name) => (newChannelName = name)}
+            onTypeChange={(type) => (channelType = type)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+      {/if}
+
+      <div class="flex-1 p-1.5 space-y-px">
         {#each channels as channel (channel.id)}
           <a
             href={ROUTES.SERVER.CHANNEL(params.id, channel.id)}
@@ -153,21 +182,10 @@
         {/each}
       </div>
 
-      <div class="p-1.5 border-t border-base-300">
-        <CreateChannelForm
-          {isCreating}
-          channelName={newChannelName}
-          {channelType}
-          error={null}
-          onToggle={() => (isCreating = true)}
-          onNameChange={(name) => (newChannelName = name)}
-          onTypeChange={(type) => (channelType = type)}
-          onKeyDown={handleKeyDown}
-          onBlur={resetForm}
-        />
-      </div>
     </div>
 
-    {@render children()}
+    <div class="flex-1 overflow-hidden">
+      {@render children()}
+    </div>
   </div>
 {/if}

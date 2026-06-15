@@ -1,9 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/preflight" layer(base);
 @import "tailwindcss/utilities" layer(utilities);
-@plugin "daisyui" {
-  themes:
-    light --default,
-    dark --prefersdark,
-    forest;
+@plugin "daisyui";
+
+@theme {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+[data-theme="w"] {
+  --color-base-100: oklch(0.141 0.005 285);
+  --color-base-200: oklch(0.105 0.006 285);
+  --color-base-300: oklch(0.07 0.004 285);
+  --color-base-content: oklch(0.92 0.004 285);
+  --color-primary: oklch(0.58 0.2 285);
+  --color-primary-content: oklch(0.98 0 0);
+  --color-secondary: oklch(0.72 0.18 170);
+  --color-secondary-content: oklch(0.98 0 0);
+  --color-accent: oklch(0.62 0.18 285);
+  --color-accent-content: oklch(0.98 0 0);
+  --color-neutral: oklch(0.2 0.008 285);
+  --color-neutral-content: oklch(0.92 0.004 285);
+  --color-info: oklch(0.62 0.18 285);
+  --color-info-content: oklch(0.98 0 0);
+  --color-success: oklch(0.72 0.18 170);
+  --color-success-content: oklch(0.14 0.02 170);
+  --color-warning: oklch(0.82 0.15 85);
+  --color-warning-content: oklch(0.14 0.02 85);
+  --color-error: oklch(0.65 0.18 25);
+  --color-error-content: oklch(0.98 0 0);
+  --color-border: oklch(0.2 0.01 285);
+
+  --radius-box: 0.75rem;
+  --radius-btn: 0.625rem;
+  --radius-field: 0.5rem;
+
+  --font-family-display: "Space Grotesk", sans-serif;
+  --font-family-body: "Inter", sans-serif;
+  --font-family-mono: "JetBrains Mono", monospace;
+}
+
+[data-theme="light"] {
+  --color-base-100: oklch(0.98 0.004 285);
+  --color-base-200: oklch(0.95 0.005 285);
+  --color-base-300: oklch(0.9 0.005 285);
+  --color-base-content: oklch(0.15 0.008 285);
+  --color-primary: oklch(0.58 0.2 285);
+  --color-primary-content: oklch(0.98 0 0);
+  --color-secondary: oklch(0.72 0.18 170);
+  --color-secondary-content: oklch(0.98 0 0);
+  --color-accent: oklch(0.62 0.18 285);
+  --color-accent-content: oklch(0.98 0 0);
+  --color-neutral: oklch(0.3 0.01 285);
+  --color-neutral-content: oklch(0.92 0 0);
+  --color-info: oklch(0.62 0.18 285);
+  --color-info-content: oklch(0.98 0 0);
+  --color-success: oklch(0.72 0.18 170);
+  --color-success-content: oklch(0.98 0 0);
+  --color-warning: oklch(0.82 0.15 85);
+  --color-warning-content: oklch(0.14 0.02 85);
+  --color-error: oklch(0.65 0.18 25);
+  --color-error-content: oklch(0.98 0 0);
+}
+
+html {
+  scrollbar-color: oklch(0.25 0.01 285) transparent;
+  scrollbar-width: thin;
+}
+
+html::-webkit-scrollbar {
+  width: 6px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: oklch(0.25 0.01 285);
+  border-radius: 3px;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }

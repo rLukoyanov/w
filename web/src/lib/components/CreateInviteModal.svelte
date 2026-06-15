@@ -62,50 +62,58 @@
 
 {#key show}
   <dialog class="modal {show ? 'modal-open' : ''}">
-    <div class="modal-box" transition:fly={{ duration: 150, y: 24 }}>
+    <div class="modal-box" transition:fly={{ duration: 150, y: 24 }}
+      style="background: oklch(0.105 0.006 285); border: 1px solid oklch(0.2 0.01 285);">
       <form method="dialog">
         <button
           class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
           onclick={onClose}
           aria-label="Close"
+          style="color: oklch(0.5 0.01 285);"
         >
           ✕
         </button>
       </form>
 
       {#if createdLink}
-        <h3 class="text-lg font-bold mb-1">Invite created</h3>
-        <p class="text-sm text-base-content/60 mb-6">
+        <h3 class="text-lg font-bold mb-1 font-[family-name:var(--font-family-display)]"
+          style="color: oklch(0.92 0.004 285);">Invite created</h3>
+        <p class="text-sm mb-6" style="color: oklch(0.5 0.01 285);">
           Share this link with others to let them join the server.
         </p>
 
         <div class="space-y-4">
-          <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-base-200">
-            <code class="text-xs flex-1 truncate">{createdLink}</code>
-            <button onclick={copyLink} class="btn btn-xs btn-ghost btn-square shrink-0" aria-label="Copy link">
+          <div class="flex items-center gap-2 px-3 py-2 rounded-lg"
+            style="background: oklch(0.14 0.007 285);">
+            <code class="text-xs flex-1 truncate" style="color: oklch(0.72 0.18 170);">{createdLink}</code>
+            <button onclick={copyLink} class="btn btn-xs btn-ghost btn-square shrink-0" aria-label="Copy link"
+              style="color: oklch(0.5 0.01 285);">
               <Link class="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
         <div class="modal-action">
-          <button onclick={onClose} class="btn btn-primary">Done</button>
+          <button onclick={onClose} class="btn"
+            style="background: oklch(0.58 0.2 285); color: white;">Done</button>
         </div>
       {:else}
-        <h3 class="text-lg font-bold mb-1">Create Invite</h3>
-        <p class="text-sm text-base-content/60 mb-6">
+        <h3 class="text-lg font-bold mb-1 font-[family-name:var(--font-family-display)]"
+          style="color: oklch(0.92 0.004 285);">Create Invite</h3>
+        <p class="text-sm mb-6" style="color: oklch(0.5 0.01 285);">
           Set limits for your invite link.
         </p>
 
         <div class="space-y-4" role="none" onkeydown={handleKeydown}>
           <div class="form-control">
             <label class="label py-1" for="modal-max-uses">
-              <span class="label-text text-sm">Max uses</span>
+              <span class="label-text text-sm" style="color: oklch(0.7 0.01 285);">Max uses</span>
             </label>
             <select
               id="modal-max-uses"
               bind:value={maxUses}
-              class="select select-bordered w-full"
+              class="select w-full"
+              style="background: oklch(0.14 0.007 285); border-color: oklch(0.22 0.01 285); color: oklch(0.92 0.004 285);"
               disabled={creating}
             >
               <option value="">Unlimited</option>
@@ -120,12 +128,13 @@
 
           <div class="form-control">
             <label class="label py-1" for="modal-expires-hours">
-              <span class="label-text text-sm">Expires</span>
+              <span class="label-text text-sm" style="color: oklch(0.7 0.01 285);">Expires</span>
             </label>
             <select
               id="modal-expires-hours"
               bind:value={expiresHours}
-              class="select select-bordered w-full"
+              class="select w-full"
+              style="background: oklch(0.14 0.007 285); border-color: oklch(0.22 0.01 285); color: oklch(0.92 0.004 285);"
               disabled={creating}
             >
               <option value="">Never</option>
@@ -143,7 +152,8 @@
         <div class="modal-action">
           <button
             onclick={handleSubmit}
-            class="btn btn-primary"
+            class="btn"
+            style="background: oklch(0.58 0.2 285); color: white; {creating ? 'opacity: 0.5;' : ''}"
             disabled={creating}
           >
             {#if creating}
@@ -154,7 +164,8 @@
               Create Invite
             {/if}
           </button>
-          <button onclick={onClose} class="btn btn-ghost" disabled={creating}>
+          <button onclick={onClose} class="btn btn-ghost" disabled={creating}
+            style="color: oklch(0.6 0.01 285);">
             Cancel
           </button>
         </div>

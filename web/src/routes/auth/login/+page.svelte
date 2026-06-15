@@ -25,8 +25,9 @@
 </script>
 
 <div class="mb-8">
-  <h1 class="text-4xl font-bold mb-2">Sign in</h1>
-  <p class="text-base-content/70">Enter your credentials to continue</p>
+  <h1 class="text-3xl font-bold mb-2 font-[family-name:var(--font-family-display)]"
+    style="color: oklch(0.92 0.004 285);">Sign in</h1>
+  <p class="text-sm" style="color: oklch(0.5 0.01 285);">Enter your credentials to continue</p>
 </div>
 
 <form
@@ -38,7 +39,7 @@
 >
   <div class="form-control">
     <label for="email" class="label">
-      <span class="label-text">Email</span>
+      <span class="label-text text-sm" style="color: oklch(0.7 0.01 285);">Email</span>
     </label>
     <input
       id="email"
@@ -46,13 +47,14 @@
       bind:value={email}
       required
       placeholder="your@email.com"
-      class="input input-bordered w-full"
+      class="input w-full"
+      style="background: oklch(0.14 0.007 285); border-color: oklch(0.22 0.01 285); color: oklch(0.92 0.004 285);"
     />
   </div>
 
   <div class="form-control">
     <label for="password" class="label">
-      <span class="label-text">Password</span>
+      <span class="label-text text-sm" style="color: oklch(0.7 0.01 285);">Password</span>
     </label>
     <input
       id="password"
@@ -60,12 +62,14 @@
       bind:value={password}
       required
       placeholder="••••••••"
-      class="input input-bordered w-full"
+      class="input w-full"
+      style="background: oklch(0.14 0.007 285); border-color: oklch(0.22 0.01 285); color: oklch(0.92 0.004 285);"
     />
   </div>
 
   <div class="form-control mt-6">
-    <button type="submit" disabled={loading} class="btn btn-primary w-full">
+    <button type="submit" disabled={loading} class="btn w-full"
+      style="background: oklch(0.58 0.2 285); color: white; {loading ? 'opacity: 0.5;' : ''}">
       {#if loading}
         <span class="loading loading-spinner"></span>
         Signing in...
@@ -75,8 +79,8 @@
     </button>
   </div>
 
-  <p class="text-center text-sm mt-4">
+  <p class="text-center text-sm mt-4" style="color: oklch(0.5 0.01 285);">
     Don't have an account?
-    <a href="/auth/register" class="link link-primary"> Sign up </a>
+    <a href="/auth/register" style="color: oklch(0.62 0.18 285);"> Sign up </a>
   </p>
 </form>

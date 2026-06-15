@@ -74,18 +74,21 @@
 
 <div class="p-6 max-w-2xl">
   {#if loading}
-    <span class="loading loading-spinner loading-sm"></span>
+    <span class="loading loading-spinner loading-sm" style="color: oklch(0.58 0.2 285);"></span>
   {:else if server}
-    <h1 class="text-2xl font-bold mb-1">{server.name}</h1>
-    <p class="text-sm text-base-content/60 mb-6">Server Settings</p>
+    <h1 class="text-2xl font-bold mb-1 font-[family-name:var(--font-family-display)]"
+      style="color: oklch(0.92 0.004 285);">{server.name}</h1>
+    <p class="text-sm mb-6" style="color: oklch(0.5 0.01 285);">Server Settings</p>
 
     <section class="mb-8">
       <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-semibold">Invites</h2>
+        <h2 class="text-lg font-semibold font-[family-name:var(--font-family-display)]"
+          style="color: oklch(0.92 0.004 285);">Invites</h2>
         {#if isOwner}
           <button
             onclick={() => (showCreateModal = true)}
-            class="btn btn-primary btn-sm gap-1"
+            class="btn btn-sm gap-1"
+            style="background: oklch(0.58 0.2 285); color: white;"
           >
             <Plus class="w-4 h-4" />
             New Invite
@@ -94,16 +97,17 @@
       </div>
 
       {#if invites.length === 0}
-        <p class="text-sm text-base-content/40">No invites yet</p>
+        <p class="text-sm" style="color: oklch(0.4 0.01 285);">No invites yet</p>
       {:else}
         <div class="space-y-2">
           {#each invites as invite}
-            <div class="flex items-center gap-3 px-4 py-3 rounded-lg bg-base-100">
-              <Link class="w-4 h-4 text-base-content/40 shrink-0" />
+            <div class="flex items-center gap-3 px-4 py-3 rounded-lg"
+              style="background: oklch(0.12 0.006 285);">
+              <Link class="w-4 h-4 shrink-0" style="color: oklch(0.4 0.01 285);" />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
-                  <code class="text-xs font-mono">{invite.code}</code>
-                  <span class="text-[10px] text-base-content/40">
+                  <code class="text-xs font-mono" style="color: oklch(0.72 0.18 170);">{invite.code}</code>
+                  <span class="text-[10px]" style="color: oklch(0.4 0.01 285);">
                     · {usesLeft(invite)} · Expires {formatExpiry(invite)}
                   </span>
                 </div>
@@ -113,9 +117,10 @@
                   onclick={() => copyLink(invite)}
                   class="btn btn-ghost btn-xs btn-square"
                   aria-label="Copy invite link"
+                  style="color: oklch(0.5 0.01 285);"
                 >
                   {#if copiedId === invite.id}
-                    <Check class="w-3.5 h-3.5 text-success" />
+                    <Check class="w-3.5 h-3.5" style="color: oklch(0.72 0.18 170);" />
                   {:else}
                     <Copy class="w-3.5 h-3.5" />
                   {/if}
@@ -123,8 +128,9 @@
                 {#if isOwner}
                   <button
                     onclick={() => handleDelete(invite.id)}
-                    class="btn btn-ghost btn-xs btn-square hover:text-error"
+                    class="btn btn-ghost btn-xs btn-square"
                     aria-label="Delete invite"
+                    style="color: oklch(0.5 0.01 285);"
                   >
                     <Trash2 class="w-3.5 h-3.5" />
                   </button>

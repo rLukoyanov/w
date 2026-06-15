@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { serversClient, userClient, type Server } from "$lib/api";
-  import favicon from "$lib/assets/favicon.svg";
   import Navbar from "$lib/components/Navbar.svelte";
   import ServerCard from "$lib/components/ServerCard.svelte";
   import { auth } from "$lib/stores/auth";
@@ -60,56 +59,53 @@
   });
 </script>
 
-<svelte:head>
-  <link rel="icon" href={favicon} />
-</svelte:head>
-
 {#if loading}
-  <div class="flex items-center justify-center min-h-screen bg-base-200">
-    <span class="loading loading-spinner loading-lg"></span>
+  <div class="flex items-center justify-center min-h-screen"
+    style="background: oklch(0.07 0.004 285);">
+    <span class="loading loading-spinner loading-lg" style="color: oklch(0.58 0.2 285);"></span>
   </div>
 {:else}
-  <div class="drawer lg:drawer-open bg-secondary/50 h-dvh">
-    <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-    <div class="drawer-content max-h-dvh grid grid-rows-[40px_1fr]">
-      <Navbar />
-      <div class="rounded-2xl overflow-hidden h-full">
-        <main class="bg-base-200 grid grid-cols-[72px_1fr] h-full">
-          <div class="flex flex-col items-center gap-2 px-2 py-3">
-            {#each servers as server}
-              <ServerCard {server} active={server.id === activeServerId} />
-            {/each}
+  <div class="h-dvh flex flex-col" style="background: oklch(0.07 0.004 285);">
+    <Navbar />
+    <div class="flex-1 flex overflow-hidden">
+      <div class="flex flex-col items-center gap-2 px-2 py-3 shrink-0"
+        style="background: oklch(0.09 0.005 285); width: 72px; border-right: 1px solid oklch(0.16 0.008 285);">
+        {#each servers as server}
+          <ServerCard {server} active={server.id === activeServerId} />
+        {/each}
 
-            <div class="divider divider-neutral mx-2 my-1"></div>
+        <div class="w-8 h-px my-1" style="background: oklch(0.18 0.008 285);"></div>
 
-            <button
-              onclick={() => (showCreateModal = true)}
-              class="tooltip tooltip-right"
-              data-tip="Create server"
-              aria-label="Create server"
+        <button
+          onclick={() => (showCreateModal = true)}
+          class="tooltip tooltip-right"
+          data-tip="Create server"
+          aria-label="Create server"
+        >
+          <div
+            class="w-12 h-12 rounded-2xl flex items-center justify-center text-lg transition-all duration-200 border-2 border-dashed"
+            style="border-color: oklch(0.3 0.01 285); color: oklch(0.35 0.01 285);"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="w-5 h-5"
             >
-              <div
-                class="w-12 h-12 rounded-2xl flex items-center justify-center text-lg transition-all duration-200 border-2 border-dashed border-base-content/30 text-base-content/30 hover:border-primary hover:text-primary hover:rounded-xl hover:shadow-md"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="w-5 h-5"
-                >
-                  <path d="M5 12h14" />
-                  <path d="M12 5v14" />
-                </svg>
-              </div>
-            </button>
+              <path d="M5 12h14" />
+              <path d="M12 5v14" />
+            </svg>
           </div>
-          {@render children()}
-        </main>
+        </button>
       </div>
+      <main class="flex-1 overflow-hidden"
+        style="background: oklch(0.105 0.006 285);">
+        {@render children()}
+      </main>
     </div>
   </div>
 {/if}
