@@ -35,7 +35,7 @@
     try {
       const token = baseClient.getToken();
       const res = await fetch(`${BASE_URL}/api/admin/stats`, {
-        headers: token ? { Authorization: "Bearer ${token}" } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!res.ok) throw new Error("Failed to load stats");
       stats = await res.json();
