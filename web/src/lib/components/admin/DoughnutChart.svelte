@@ -1,22 +1,23 @@
 <script lang="ts">
-  let { data, size = 140 }: {
+  let { data, size = 150 }: {
     data: { label: string; value: number; color: string }[];
     size?: number;
   } = $props();
 
+  const bgColor = "oklch(0.15 0.008 285)";
   let total = $derived(data.reduce((s, d) => s + d.value, 0) || 1);
   let cx = $derived(size / 2);
   let cy = $derived(size / 2);
-  let r = $derived(size / 2 - 8);
-  let circumference = $derived(2 * Math.PI * r);
+  let r = $derived(size / 2 - 10);
+  let circ = $derived(2 * Math.PI * r);
 
   let segments = $derived.by(() => {
     let offset = 0;
     return data.map((d) => {
       const pct = d.value / total;
-      const len = pct * circumference;
+      const len = pct * circ;
       const seg = { ...d, offset, length: len, pct };
-      offset += len;
+      offset -= len;
       return seg;
     });
   });
@@ -24,29 +25,31 @@
 
 <div class="flex flex-col items-center gap-3">
   <svg width={size} height={size} viewBox="0 0 {size} {size}">
-    <circle cx={cx} cy={cy} r={r} fill="none" stroke="oklch(0.15 0.008 285)" stroke-width="14" />
+    <circle cx={cx} cy={cy} r={r} fill="none" stroke={bgColor} stroke-width="16" />
     {#each segments as seg}
       {#if seg.value > 0}
         <circle cx={cx} cy={cy} r={r} fill="none"
           stroke={seg.color}
-          stroke-width="14"
-          stroke-dasharray="{seg.length} {circumference - seg.length}"
-          stroke-dashoffset={-seg.offset}
+          stroke-width="16"
+          stroke-linecap="round"
+          stroke-dasharray="{seg.length} {circ - Math.max(seg.length, 1)}"
+          stroke-dashoffset={seg.offset}
           transform="rotate(-90 {cx} {cy})"
-          style="transition: stroke-dasharray 0.5s;"
-        />
+          style="transition: stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease;" />
       {/if}
     {/each}
-    <text x={cx} y={cy - 4} text-anchor="middle" class="text-lg font-bold" fill="oklch(0.85 0.01 285)">{total}</text>
-    <text x={cx} y={cy + 12} text-anchor="middle" class="text-[10px]" fill="oklch(0.5 0.01 285)">total</text>
+    <text x={cx} y={cy - 3} text-anchor="middle"
+      font-size="22" font-weight="700" fill="oklch(0.88 0.005 285)" font-family="var(--font-family-display), sans-serif">{total}</text>
+    <text x={cx} y={cy + 13} text-anchor="middle"
+      font-size="10" fill="oklch(0.45 0.01 285)" font-family="var(--font-family-body), sans-serif">total</text>
   </svg>
 
-  <div class="flex flex-wrap gap-3 justify-center">
+  <div class="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
     {#each segments as seg}
-      <div class="flex items-center gap-1.5 text-xs">
-        <div class="w-2.5 h-2.5 rounded-sm" style="background: {seg.color};"></div>
-        <span style="color: oklch(0.6 0.01 285);">{seg.label}</span>
-        <span class="font-medium" style="color: oklch(0.8 0.01 285);">{(seg.pct * 100).toFixed(0)}%</span>
+      <div class="flex items-center gap-1.5 text-xs font-[family-name:var(--font-family-body)]">
+        <div class="w-2 h-2 rounded-full" style="background: {seg.color}; box-shadow: 0 0 4px {seg.color}66;"></div>
+        <span style="color: oklch(0.55 0.01 285);">{seg.label}</span>
+        <span class="font-semibold tabular-nums" style="color: oklch(0.78 0.01 285);">{(seg.pct * 100).toFixed(0)}%</span>
       </div>
     {/each}
   </div>
