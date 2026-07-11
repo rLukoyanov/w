@@ -1,21 +1,21 @@
-:root {
-	--color-primary: #b31b1b;
-	--color-primary-hover: #8b1313;
-	--color-primary-light: #fce8e8;
-	--color-secondary: #c8961e;
-	--color-secondary-hover: #a87a14;
+@import 'tailwindcss';
+
+@theme {
+	--color-primary: #c8961e;
+	--color-primary-hover: #a87a14;
+	--color-primary-light: #fef3c7;
+	--color-secondary: #b31b1b;
+	--color-secondary-hover: #8b1313;
 	--color-success: #2d7a4a;
 	--color-warning: #d4a017;
 	--color-danger: #b31b1b;
 	--color-danger-hover: #8b1313;
-
 	--color-bg: #fdf8f0;
 	--color-bg-secondary: #f5ede0;
 	--color-bg-tertiary: #ece0cc;
 	--color-surface: #fffcf5;
 	--color-border: #d4c4a8;
 	--color-border-hover: #b8a88c;
-
 	--color-text: #2c1810;
 	--color-text-secondary: #6b4f3a;
 	--color-text-muted: #9c8570;
@@ -24,23 +24,21 @@
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--color-primary: #e34a4a;
-		--color-primary-hover: #cc3333;
-		--color-primary-light: #3d1a1a;
-		--color-secondary: #d4a830;
-		--color-secondary-hover: #e6bb44;
+		--color-primary: #d4a830;
+		--color-primary-hover: #e6bb44;
+		--color-primary-light: #3d3018;
+		--color-secondary: #e34a4a;
+		--color-secondary-hover: #cc3333;
 		--color-success: #3da065;
 		--color-warning: #e0b020;
 		--color-danger: #e34a4a;
 		--color-danger-hover: #cc3333;
-
 		--color-bg: #1a1410;
 		--color-bg-secondary: #2a221c;
 		--color-bg-tertiary: #3a3028;
 		--color-surface: #221c16;
 		--color-border: #4a3d32;
 		--color-border-hover: #5c4e42;
-
 		--color-text: #ede6dc;
 		--color-text-secondary: #b8a898;
 		--color-text-muted: #8a7a6a;
