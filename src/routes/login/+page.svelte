@@ -1,8 +1,31 @@
 <script lang="ts">
 	import bg from '$lib/assets/bg.JPG';
+	import { user } from '$lib/api/users';
+	import { goto } from '$app/navigation';
 
 	let email = $state('');
 	let password = $state('');
+	let error = $state('');
+	let loading = $state(false);
+
+	function extractError(err: unknown): string {
+		const pbErr = err as { response?: { message?: string } };
+		return pbErr.response?.message ?? 'Ошибка входа';
+	}
+
+	async function handleSubmit(e: Event) {
+		e.preventDefault();
+		error = '';
+		loading = true;
+		try {
+			await user.login(email, password);
+			goto('/dashboard');
+		} catch (err: unknown) {
+			error = extractError(err);
+		} finally {
+			loading = false;
+		}
+	}
 </script>
 
 <div class="relative flex flex-1 items-center justify-center overflow-hidden px-4">
@@ -26,7 +49,7 @@
 				<p class="mt-1 text-sm text-text-muted">Войдите в свой аккаунт</p>
 			</div>
 
-			<form method="POST" action="/login" class="space-y-5">
+			<form onsubmit={handleSubmit} class="space-y-5">
 				<div>
 					<label for="email" class="mb-1.5 block text-sm font-medium text-text-secondary">Email</label>
 					<input
@@ -40,7 +63,7 @@
 					/>
 				</div>
 				<div>
-					<label for="password" class="mb-1.5 block text-sm font-medium text-text-secondary">Пароль</label>
+					<label for="password" class="mb-1.5 block text-sm font-medium text-text-secondary">Тайное слово</label>
 					<input
 						type="password"
 						id="password"
@@ -51,11 +74,17 @@
 						placeholder="••••••••"
 					/>
 				</div>
+
+				{#if error}
+					<p class="text-sm text-danger">{error}</p>
+				{/if}
+
 				<button
 					type="submit"
-					class="w-full rounded-lg bg-primary px-4 py-3 font-medium text-text-inverse transition hover:bg-primary-hover"
+					disabled={loading}
+					class="w-full rounded-lg bg-primary px-4 py-3 font-medium text-text-inverse transition hover:bg-primary-hover disabled:opacity-60"
 				>
-					Войти
+					{loading ? 'Вход...' : 'Войти'}
 				</button>
 			</form>
 
