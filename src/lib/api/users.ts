@@ -3,7 +3,7 @@ import type { RecordModel } from 'pocketbase';
 
 export interface User extends RecordModel {
 	email: string;
-	name: string;
+	username: string;
 	avatar?: string;
 	verified: boolean;
 }
@@ -13,12 +13,12 @@ export const user = {
 		return await pb.collection('users').authWithPassword<User>(email, password);
 	},
 
-	async register(email: string, password: string, passwordConfirm: string, name?: string) {
+	async register(email: string, password: string, passwordConfirm: string, username?: string) {
 		return await pb.collection('users').create<User>({
 			email,
 			password,
 			passwordConfirm,
-			name
+			username
 		});
 	},
 

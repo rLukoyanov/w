@@ -1,7 +1,7 @@
 <script lang="ts">
   import { user } from "$lib/api/users";
 
-  let name = $derived(user.current?.name || "Пользователь");
+  let name = $derived(user.current?.username || "Пользователь");
 </script>
 
 <div class="flex-1 px-8 py-6">
